@@ -150,7 +150,7 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <Card className="max-w-md w-full border-amber-500/30">
-          <CardContent className="pt-6">
+          <CardContent className="pt-6"> 
             <div className="text-center space-y-4">
               <div className="w-16 h-16 rounded-full bg-amber-500/20 flex items-center justify-center mx-auto">
                 <AlertTriangle className="w-8 h-8 text-amber-500" />
