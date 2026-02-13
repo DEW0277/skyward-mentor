@@ -10,7 +10,7 @@ const stats = [
 
 const ExpertStory = () => {
   return (
-    <section id="expert-story" className="py-24 bg-background">
+    <section id="mentor" className="py-24 bg-background">
       <div className="container mx-auto px-6">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* Image */}

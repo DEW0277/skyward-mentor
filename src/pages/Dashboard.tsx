@@ -3,9 +3,23 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, User, FileText, LogOut, AlertTriangle, Shield } from "lucide-react";
+import {
+  BookOpen,
+  User,
+  FileText,
+  LogOut,
+  AlertTriangle,
+  Shield,
+  Home,
+} from "lucide-react";
 import FullBookReader from "@/components/FullBookReader";
 import CVSubmission from "@/components/CVSubmission";
 import AccessCountdown from "@/components/AccessCountdown";
@@ -35,8 +49,10 @@ const Dashboard = () => {
 
   const checkAccess = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       if (!session) {
         navigate("/auth");
         return;
@@ -49,7 +65,7 @@ const Dashboard = () => {
         .eq("user_id", session.user.id)
         .eq("role", "admin")
         .maybeSingle();
-      
+
       setIsAdmin(!!roleData);
 
       // Get profile first
@@ -84,10 +100,21 @@ const Dashboard = () => {
       } else {
         setLead(leads[0] as LeadData);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      let errorMessage = "Xatolik yuz berdi";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (
+        typeof error === "object" &&
+        error !== null &&
+        "message" in error
+      ) {
+        errorMessage = String((error as { message: unknown }).message);
+      }
+
       toast({
         title: "Xatolik",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -115,8 +142,8 @@ const Dashboard = () => {
   }
 
   // Check if access is still valid
-  const isAccessExpired = lead?.access_until 
-    ? new Date(lead.access_until) < new Date() 
+  const isAccessExpired = lead?.access_until
+    ? new Date(lead.access_until) < new Date()
     : true;
 
   if (!lead || lead.status !== "approved" || isAccessExpired) {
@@ -132,7 +159,7 @@ const Dashboard = () => {
                 Kirish imkoni yo'q
               </h2>
               <p className="text-muted-foreground text-sm">
-                {isAccessExpired 
+                {isAccessExpired
                   ? "Sizning 6 oylik kirish muddatingiz tugagan. Iltimos, qayta sotib oling."
                   : "Sizning hisobingiz hali tasdiqlanmagan yoki ruxsat berilmagan."}
               </p>
@@ -168,8 +195,16 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => navigate("/")}>
+              <Home className="w-4 h-4 mr-2" />
+              Bosh sahifa
+            </Button>
             {isAdmin && (
-              <Button variant="outline" size="sm" onClick={() => navigate("/admin")}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/admin")}
+              >
                 <Shield className="w-4 h-4 mr-2" />
                 Admin Panel
               </Button>
@@ -235,15 +270,21 @@ const Dashboard = () => {
                 <CardContent className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Ism:</span>
-                    <span className="text-foreground font-medium">{lead.full_name}</span>
+                    <span className="text-foreground font-medium">
+                      {lead.full_name}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Yosh:</span>
-                    <span className="text-foreground font-medium">{lead.age}</span>
+                    <span className="text-foreground font-medium">
+                      {lead.age}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Status:</span>
-                    <span className="text-green-500 font-medium">✓ Tasdiqlangan</span>
+                    <span className="text-green-500 font-medium">
+                      ✓ Tasdiqlangan
+                    </span>
                   </div>
                 </CardContent>
               </Card>
@@ -264,7 +305,8 @@ const Dashboard = () => {
                     Kitobni o'qish
                   </CardTitle>
                   <CardDescription>
-                    Sahifalarni bosing yoki suring. Telefoningizda ham qulay ishlaydi
+                    Sahifalarni bosing yoki suring. Telefoningizda ham qulay
+                    ishlaydi
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

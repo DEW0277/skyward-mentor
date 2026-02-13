@@ -4,8 +4,27 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plane, LogOut, Users, CheckCircle, XCircle, Clock, RefreshCw, FileText, Download, BookOpen } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Plane,
+  LogOut,
+  Users,
+  CheckCircle,
+  XCircle,
+  Clock,
+  RefreshCw,
+  FileText,
+  Download,
+  BookOpen,
+  Home,
+} from "lucide-react";
 import AdminBookManager from "@/components/AdminBookManager";
 import { User, Session } from "@supabase/supabase-js";
 
@@ -26,7 +45,9 @@ const Admin = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [filter, setFilter] = useState<"all" | "pending" | "approved" | "blocked">("all");
+  const [filter, setFilter] = useState<
+    "all" | "pending" | "approved" | "blocked"
+  >("all");
   const [updating, setUpdating] = useState<string | null>(null);
 
   useEffect(() => {
@@ -60,14 +81,20 @@ const Admin = () => {
   }, [session]);
 
   const fetchLeads = async () => {
-    const { data, error } = await supabase.from("leads").select("*").order("created_at", { ascending: false });
+    const { data, error } = await supabase
+      .from("leads")
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (!error && data) {
       setLeads(data);
     }
   };
 
-  const updateLeadStatus = async (leadId: string, newStatus: "approved" | "blocked") => {
+  const updateLeadStatus = async (
+    leadId: string,
+    newStatus: "approved" | "blocked",
+  ) => {
     setUpdating(leadId);
 
     const accessUntil =
@@ -85,7 +112,11 @@ const Admin = () => {
 
     if (!error) {
       setLeads(
-        leads.map((lead) => (lead.id === leadId ? { ...lead, status: newStatus, access_until: accessUntil } : lead)),
+        leads.map((lead) =>
+          lead.id === leadId
+            ? { ...lead, status: newStatus, access_until: accessUntil }
+            : lead,
+        ),
       );
     }
 
@@ -112,7 +143,8 @@ const Admin = () => {
     URL.revokeObjectURL(url);
   };
 
-  const filteredLeads = filter === "all" ? leads : leads.filter((lead) => lead.status === filter);
+  const filteredLeads =
+    filter === "all" ? leads : leads.filter((lead) => lead.status === filter);
 
   const stats = {
     total: leads.length,
@@ -140,6 +172,10 @@ const Admin = () => {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground">{user?.email}</span>
+            <Button variant="outline" size="sm" onClick={() => navigate("/")}>
+              <Home className="w-4 h-4 mr-2" />
+              Bosh sahifa
+            </Button>
             <Button variant="outline" size="sm" onClick={handleLogout}>
               <LogOut className="w-4 h-4 mr-2" />
               Chiqish
@@ -152,10 +188,30 @@ const Admin = () => {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
-            { label: "Jami", value: stats.total, icon: Users, color: "text-foreground" },
-            { label: "Kutilmoqda", value: stats.pending, icon: Clock, color: "text-yellow-600" },
-            { label: "Tasdiqlangan", value: stats.approved, icon: CheckCircle, color: "text-green-600" },
-            { label: "Bloklangan", value: stats.blocked, icon: XCircle, color: "text-red-600" },
+            {
+              label: "Jami",
+              value: stats.total,
+              icon: Users,
+              color: "text-foreground",
+            },
+            {
+              label: "Kutilmoqda",
+              value: stats.pending,
+              icon: Clock,
+              color: "text-yellow-600",
+            },
+            {
+              label: "Tasdiqlangan",
+              value: stats.approved,
+              icon: CheckCircle,
+              color: "text-green-600",
+            },
+            {
+              label: "Bloklangan",
+              value: stats.blocked,
+              icon: XCircle,
+              color: "text-red-600",
+            },
           ].map((stat) => (
             <motion.div
               key={stat.label}
@@ -166,8 +222,12 @@ const Admin = () => {
               <div className="flex items-center gap-3">
                 <stat.icon className={`w-5 h-5 ${stat.color}`} />
                 <div>
-                  <div className="text-2xl font-display font-bold text-foreground">{stat.value}</div>
-                  <div className="text-xs text-muted-foreground">{stat.label}</div>
+                  <div className="text-2xl font-display font-bold text-foreground">
+                    {stat.value}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {stat.label}
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -177,7 +237,12 @@ const Admin = () => {
         {/* Filters */}
         <div className="flex items-center gap-2 mb-6">
           {(["all", "pending", "approved", "blocked"] as const).map((f) => (
-            <Button key={f} variant={filter === f ? "premium" : "outline"} size="sm" onClick={() => setFilter(f)}>
+            <Button
+              key={f}
+              variant={filter === f ? "premium" : "outline"}
+              size="sm"
+              onClick={() => setFilter(f)}
+            >
               {f === "all"
                 ? "Hammasi"
                 : f === "pending"
@@ -187,7 +252,12 @@ const Admin = () => {
                     : "Bloklangan"}
             </Button>
           ))}
-          <Button variant="outline" size="sm" onClick={fetchLeads} className="ml-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetchLeads}
+            className="ml-auto"
+          >
             <RefreshCw className="w-4 h-4 mr-2" />
             Yangilash
           </Button>
@@ -215,14 +285,19 @@ const Admin = () => {
             <TableBody>
               {filteredLeads.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  <TableCell
+                    colSpan={7}
+                    className="text-center py-8 text-muted-foreground"
+                  >
                     Hech qanday foydalanuvchi topilmadi
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredLeads.map((lead) => (
                   <TableRow key={lead.id}>
-                    <TableCell className="font-medium">{lead.full_name}</TableCell>
+                    <TableCell className="font-medium">
+                      {lead.full_name}
+                    </TableCell>
                     <TableCell>{lead.age} yosh</TableCell>
                     <TableCell>
                       <Badge
@@ -246,7 +321,9 @@ const Admin = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleDownloadCV(lead.cv_file_path!, lead.full_name)}
+                          onClick={() =>
+                            handleDownloadCV(lead.cv_file_path!, lead.full_name)
+                          }
                           className="gap-1"
                         >
                           <Download className="w-3 h-3" />
@@ -262,16 +339,24 @@ const Admin = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      {lead.access_until ? new Date(lead.access_until).toLocaleDateString("uz-UZ") : "—"}
+                      {lead.access_until
+                        ? new Date(lead.access_until).toLocaleDateString(
+                            "uz-UZ",
+                          )
+                        : "—"}
                     </TableCell>
-                    <TableCell>{new Date(lead.created_at).toLocaleDateString("uz-UZ")}</TableCell>
+                    <TableCell>
+                      {new Date(lead.created_at).toLocaleDateString("uz-UZ")}
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
                         {lead.status !== "approved" && (
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => updateLeadStatus(lead.id, "approved")}
+                            onClick={() =>
+                              updateLeadStatus(lead.id, "approved")
+                            }
                             disabled={updating === lead.id}
                             className="text-green-600 border-green-200 hover:bg-green-50"
                           >

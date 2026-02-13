@@ -6,7 +6,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, Trash2, Edit2, Star, FileText, Plus, X, Save } from "lucide-react";
+import {
+  Upload,
+  Trash2,
+  Edit2,
+  Star,
+  FileText,
+  Plus,
+  X,
+  Save,
+} from "lucide-react";
 
 interface Book {
   id: string;
@@ -48,12 +57,18 @@ const AdminBookManager = () => {
 
   const handleUpload = async () => {
     if (!selectedFiles || selectedFiles.length === 0 || !newTitle.trim()) {
-      toast({ title: "Xatolik", description: "Sarlavha va fayllarni tanlang", variant: "destructive" });
+      toast({
+        title: "Xatolik",
+        description: "Sarlavha va fayllarni tanlang",
+        variant: "destructive",
+      });
       return;
     }
 
     setUploading(true);
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (!session) return;
 
     try {
@@ -67,22 +82,19 @@ const AdminBookManager = () => {
 
         if (uploadError) throw uploadError;
 
-        const title = selectedFiles.length === 1
-          ? newTitle
-          : `${newTitle} (${i + 1})`;
+        const title =
+          selectedFiles.length === 1 ? newTitle : `${newTitle} (${i + 1})`;
 
-        const { error: insertError } = await supabase
-          .from("books")
-          .insert({
-            title,
-            description: newDescription || null,
-            file_path: filePath,
-            file_name: file.name,
-            file_size: file.size,
-            is_primary: books.length === 0 && i === 0,
-            display_order: books.length + i,
-            created_by: session.user.id,
-          });
+        const { error: insertError } = await supabase.from("books").insert({
+          title,
+          description: newDescription || null,
+          file_path: filePath,
+          file_name: file.name,
+          file_size: file.size,
+          is_primary: books.length === 0 && i === 0,
+          display_order: books.length + i,
+          created_by: session.user.id,
+        });
 
         if (insertError) throw insertError;
       }
@@ -93,8 +105,12 @@ const AdminBookManager = () => {
       setSelectedFiles(null);
       setShowAddForm(false);
       fetchBooks();
-    } catch (error: any) {
-      toast({ title: "Xatolik", description: error.message, variant: "destructive" });
+    } catch (error) {
+      toast({
+        title: "Xatolik",
+        description: (error as Error).message,
+        variant: "destructive",
+      });
     } finally {
       setUploading(false);
     }
@@ -106,7 +122,11 @@ const AdminBookManager = () => {
       .remove([book.file_path]);
 
     if (storageError) {
-      toast({ title: "Xatolik", description: storageError.message, variant: "destructive" });
+      toast({
+        title: "Xatolik",
+        description: storageError.message,
+        variant: "destructive",
+      });
       return;
     }
 
@@ -121,7 +141,10 @@ const AdminBookManager = () => {
     // Unset all primary first
     await supabase.from("books").update({ is_primary: false }).neq("id", "");
     // Set this one as primary
-    const { error } = await supabase.from("books").update({ is_primary: true }).eq("id", bookId);
+    const { error } = await supabase
+      .from("books")
+      .update({ is_primary: true })
+      .eq("id", bookId);
     if (!error) {
       setBooks(books.map((b) => ({ ...b, is_primary: b.id === bookId })));
       toast({ title: "Asosiy kitob o'rnatildi" });
@@ -135,9 +158,13 @@ const AdminBookManager = () => {
       .eq("id", bookId);
 
     if (!error) {
-      setBooks(books.map((b) =>
-        b.id === bookId ? { ...b, title: editTitle, description: editDescription || null } : b
-      ));
+      setBooks(
+        books.map((b) =>
+          b.id === bookId
+            ? { ...b, title: editTitle, description: editDescription || null }
+            : b,
+        ),
+      );
       setEditingId(null);
       toast({ title: "Yangilandi" });
     }
@@ -168,7 +195,11 @@ const AdminBookManager = () => {
           size="sm"
           onClick={() => setShowAddForm(!showAddForm)}
         >
-          {showAddForm ? <X className="w-4 h-4 mr-1" /> : <Plus className="w-4 h-4 mr-1" />}
+          {showAddForm ? (
+            <X className="w-4 h-4 mr-1" />
+          ) : (
+            <Plus className="w-4 h-4 mr-1" />
+          )}
           {showAddForm ? "Bekor qilish" : "Yangi qo'shish"}
         </Button>
       </CardHeader>
@@ -198,7 +229,11 @@ const AdminBookManager = () => {
                 Bir nechta fayl tanlash mumkin (PDF, DOC, EPUB, TXT)
               </p>
             </div>
-            <Button onClick={handleUpload} disabled={uploading} className="w-full">
+            <Button
+              onClick={handleUpload}
+              disabled={uploading}
+              className="w-full"
+            >
               <Upload className="w-4 h-4 mr-2" />
               {uploading ? "Yuklanmoqda..." : "Yuklash"}
             </Button>
@@ -233,7 +268,11 @@ const AdminBookManager = () => {
                         <Button size="sm" onClick={() => handleUpdate(book.id)}>
                           <Save className="w-3 h-3 mr-1" /> Saqlash
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingId(null)}
+                        >
                           Bekor
                         </Button>
                       </div>
@@ -241,13 +280,19 @@ const AdminBookManager = () => {
                   ) : (
                     <>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-foreground truncate">{book.title}</span>
+                        <span className="font-medium text-foreground truncate">
+                          {book.title}
+                        </span>
                         {book.is_primary && (
-                          <Badge variant="default" className="text-xs">Asosiy</Badge>
+                          <Badge variant="default" className="text-xs">
+                            Asosiy
+                          </Badge>
                         )}
                       </div>
                       {book.description && (
-                        <p className="text-sm text-muted-foreground mb-1">{book.description}</p>
+                        <p className="text-sm text-muted-foreground mb-1">
+                          {book.description}
+                        </p>
                       )}
                       <p className="text-xs text-muted-foreground">
                         {book.file_name} • {formatSize(book.file_size)}

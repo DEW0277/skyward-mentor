@@ -12,7 +12,12 @@ if (DEADLINE.getTime() < Date.now()) {
 
 const BonusSection = () => {
   const navigate = useNavigate();
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
 
   useEffect(() => {
     const tick = () => {
@@ -37,7 +42,10 @@ const BonusSection = () => {
   ];
 
   return (
-    <section id="bonus-section" className="py-24 bg-gradient-hero relative overflow-hidden">
+    <section
+      id="bonuses"
+      className="py-24 bg-gradient-hero relative overflow-hidden"
+    >
       {/* Decorative */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-20 left-10 w-64 h-64 bg-gold rounded-full blur-[100px]" />
@@ -53,7 +61,9 @@ const BonusSection = () => {
         >
           <div className="inline-flex items-center gap-2 bg-gold/20 rounded-full px-4 py-2 mb-8">
             <Sparkles className="w-4 h-4 text-gold" />
-            <span className="text-gold text-sm font-medium">Cheklangan aksiya</span>
+            <span className="text-gold text-sm font-medium">
+              Cheklangan aksiya
+            </span>
           </div>
 
           <h2 className="font-display text-3xl md:text-5xl font-bold text-primary-foreground mb-6">
@@ -77,7 +87,8 @@ const BonusSection = () => {
                 Shaxsiy CV tekshiruvi
               </h3>
               <p className="text-primary-foreground/70 text-sm">
-                Shohruh shaxsan sizning CV'ingizni ko'rib chiqib, tavsiyalar beradi
+                Shohruh shaxsan sizning CV'ingizni ko'rib chiqib, tavsiyalar
+                beradi
               </p>
             </div>
           </div>
@@ -106,7 +117,11 @@ const BonusSection = () => {
             </div>
           </div>
 
-          <Button variant="hero" size="xl" onClick={() => navigate("/purchase")}>
+          <Button
+            variant="hero"
+            size="xl"
+            onClick={() => navigate("/purchase")}
+          >
             Hozir sotib olish — Bonuslar bilan
           </Button>
         </motion.div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { User } from "@supabase/supabase-js";
 import { motion } from "framer-motion";
 import { Plane, Menu, X, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,7 +19,9 @@ const Navbar = () => {
   }, []);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -39,7 +42,9 @@ const Navbar = () => {
     >
       <div className="container mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Plane className={`w-5 h-5 ${scrolled ? "text-primary" : "text-gold"}`} />
+          <Plane
+            className={`w-5 h-5 ${scrolled ? "text-primary" : "text-gold"}`}
+          />
           <span
             className={`font-display text-lg font-bold ${
               scrolled ? "text-foreground" : "text-primary-foreground"
@@ -51,20 +56,28 @@ const Navbar = () => {
 
         {/* Desktop */}
         <div className="hidden md:flex items-center gap-6">
-          {["Kitob haqida", "Bonuslar", "Mentor"].map((item) => (
+          {[
+            { name: "Kitob haqida", href: "#features" },
+            { name: "Bonuslar", href: "#bonuses" },
+            { name: "Mentor", href: "#mentor" },
+          ].map((item) => (
             <a
-              key={item}
-              href="#"
+              key={item.name}
+              href={item.href}
               className={`text-sm font-medium transition-colors ${
                 scrolled
                   ? "text-muted-foreground hover:text-foreground"
                   : "text-primary-foreground/70 hover:text-primary-foreground"
               }`}
             >
-              {item}
+              {item.name}
             </a>
           ))}
-          <Button variant="hero" size="sm" onClick={() => navigate("/purchase")}>
+          <Button
+            variant="hero"
+            size="sm"
+            onClick={() => navigate("/purchase")}
+          >
             Sotib olish
           </Button>
           {user ? (
@@ -72,14 +85,26 @@ const Navbar = () => {
               onClick={() => navigate("/dashboard")}
               className="transition-colors"
             >
-              <UserCircle className={`w-7 h-7 ${scrolled ? "text-foreground" : "text-primary-foreground"}`} />
+              <UserCircle
+                className={`w-7 h-7 ${scrolled ? "text-foreground" : "text-primary-foreground"}`}
+              />
             </button>
           ) : (
             <>
-              <Button variant="outline" size="sm" onClick={() => navigate("/auth")}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/auth")}
+              >
                 Kirish
               </Button>
-              <Button variant="hero" size="sm" onClick={() => { navigate("/auth"); }}>
+              <Button
+                variant="hero"
+                size="sm"
+                onClick={() => {
+                  navigate("/auth");
+                }}
+              >
                 Ro'yxatdan o'tish
               </Button>
             </>
@@ -92,9 +117,17 @@ const Navbar = () => {
           className="md:hidden"
         >
           {mobileOpen ? (
-            <X className={scrolled ? "text-foreground" : "text-primary-foreground"} />
+            <X
+              className={
+                scrolled ? "text-foreground" : "text-primary-foreground"
+              }
+            />
           ) : (
-            <Menu className={scrolled ? "text-foreground" : "text-primary-foreground"} />
+            <Menu
+              className={
+                scrolled ? "text-foreground" : "text-primary-foreground"
+              }
+            />
           )}
         </button>
       </div>
@@ -107,25 +140,45 @@ const Navbar = () => {
           className="md:hidden bg-background border-b border-border"
         >
           <div className="container mx-auto px-6 py-4 space-y-3">
-            {["Kitob haqida", "Bonuslar", "Mentor"].map((item) => (
+            {[
+              { name: "Kitob haqida", href: "#features" },
+              { name: "Bonuslar", href: "#bonuses" },
+              { name: "Mentor", href: "#mentor" },
+            ].map((item) => (
               <a
-                key={item}
-                href="#"
+                key={item.name}
+                href={item.href}
                 className="block text-muted-foreground hover:text-foreground text-sm"
+                onClick={() => setMobileOpen(false)}
               >
-                {item}
+                {item.name}
               </a>
             ))}
-            <Button variant="hero" size="sm" className="w-full" onClick={() => navigate("/purchase")}>
+            <Button
+              variant="hero"
+              size="sm"
+              className="w-full"
+              onClick={() => navigate("/purchase")}
+            >
               Sotib olish
             </Button>
             {user ? (
-              <Button variant="outline" size="sm" className="w-full" onClick={() => navigate("/dashboard")}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => navigate("/dashboard")}
+              >
                 <UserCircle className="w-4 h-4 mr-2" />
                 Dashboard
               </Button>
             ) : (
-              <Button variant="outline" size="sm" className="w-full" onClick={() => navigate("/auth")}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => navigate("/auth")}
+              >
                 Kirish
               </Button>
             )}

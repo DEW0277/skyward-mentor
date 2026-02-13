@@ -5,7 +5,10 @@ import { Plane, ChevronDown } from "lucide-react";
 
 const HeroSection = () => {
   return (
-    <section id="hero" className="relative min-h-screen flex items-center overflow-hidden">
+    <section
+      id="hero"
+      className="relative min-h-screen flex items-center overflow-hidden"
+    >
       {/* Background */}
       <div className="absolute inset-0">
         <img

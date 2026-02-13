@@ -13,21 +13,61 @@ import {
 } from "lucide-react";
 
 const features = [
-  { icon: FileText, title: "CV tayyorlash sirlari", desc: "Emirates standartlariga mos professional CV yaratish" },
-  { icon: MessageSquare, title: "Intervyu savollari", desc: "Eng ko'p beriladigan savollar va ideal javoblar" },
-  { icon: Briefcase, title: "Open Day tayyorgarlik", desc: "Open Day va Assessment Day uchun to'liq qo'llanma" },
-  { icon: Star, title: "Grooming standartlari", desc: "Tashqi ko'rinish va kiyinish qoidalari" },
-  { icon: Plane, title: "Parvoz tajribasi", desc: "Real parvozlardagi vaziyatlar va yechimlar" },
-  { icon: Heart, title: "Sog'liq talablari", desc: "Tibbiy ko'rik va sog'liq standartlari haqida" },
-  { icon: Shield, title: "Xavfsizlik bilimi", desc: "Bort xavfsizligi bo'yicha asosiy bilimlar" },
-  { icon: BookOpen, title: "Ingliz tili tayyorligi", desc: "TOEIC/IELTS va aviation English bo'yicha maslahatlar" },
-  { icon: Camera, title: "Portfolio yaratish", desc: "Professional rasm va video portfolio qo'llanmasi" },
-  { icon: Award, title: "Muvaffaqiyat strategiyasi", desc: "Birinchi urinishda muvaffaq bo'lish uchun reja" },
+  {
+    icon: FileText,
+    title: "CV tayyorlash sirlari",
+    desc: "Emirates standartlariga mos professional CV yaratish",
+  },
+  {
+    icon: MessageSquare,
+    title: "Intervyu savollari",
+    desc: "Eng ko'p beriladigan savollar va ideal javoblar",
+  },
+  {
+    icon: Briefcase,
+    title: "Open Day tayyorgarlik",
+    desc: "Open Day va Assessment Day uchun to'liq qo'llanma",
+  },
+  {
+    icon: Star,
+    title: "Grooming standartlari",
+    desc: "Tashqi ko'rinish va kiyinish qoidalari",
+  },
+  {
+    icon: Plane,
+    title: "Parvoz tajribasi",
+    desc: "Real parvozlardagi vaziyatlar va yechimlar",
+  },
+  {
+    icon: Heart,
+    title: "Sog'liq talablari",
+    desc: "Tibbiy ko'rik va sog'liq standartlari haqida",
+  },
+  {
+    icon: Shield,
+    title: "Xavfsizlik bilimi",
+    desc: "Bort xavfsizligi bo'yicha asosiy bilimlar",
+  },
+  {
+    icon: BookOpen,
+    title: "Ingliz tili tayyorligi",
+    desc: "TOEIC/IELTS va aviation English bo'yicha maslahatlar",
+  },
+  {
+    icon: Camera,
+    title: "Portfolio yaratish",
+    desc: "Professional rasm va video portfolio qo'llanmasi",
+  },
+  {
+    icon: Award,
+    title: "Muvaffaqiyat strategiyasi",
+    desc: "Birinchi urinishda muvaffaq bo'lish uchun reja",
+  },
 ];
 
 const BookFeatures = () => {
   return (
-    <section id="book-features" className="py-24 bg-card">
+    <section id="features" className="py-24 bg-card">
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -39,7 +79,8 @@ const BookFeatures = () => {
             Kitob tarkibi
           </span>
           <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mt-2 mb-4">
-            Bu kitob sizga <span className="text-gradient-gold italic">nima</span> beradi?
+            Bu kitob sizga{" "}
+            <span className="text-gradient-gold italic">nima</span> beradi?
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             10 ta muhim bo'lim — har biri sizni orzuingizdagi kasbga bir qadam

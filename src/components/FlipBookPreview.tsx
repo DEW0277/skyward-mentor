@@ -7,13 +7,14 @@ import { ChevronLeft, ChevronRight, Lock, BookOpen } from "lucide-react";
 import bookCover from "@/assets/book-cover.jpg";
 
 // Page component MUST use forwardRef for react-pageflip to work
-const Page = forwardRef<HTMLDivElement, { children: React.ReactNode; className?: string }>(
-  ({ children, className = "" }, ref) => (
-    <div ref={ref} className={`bg-background ${className}`}>
-      {children}
-    </div>
-  )
-);
+const Page = forwardRef<
+  HTMLDivElement,
+  { children: React.ReactNode; className?: string }
+>(({ children, className = "" }, ref) => (
+  <div ref={ref} className={`bg-background ${className}`}>
+    {children}
+  </div>
+));
 Page.displayName = "Page";
 
 const tocItems = [
@@ -29,8 +30,21 @@ const tocItems = [
   { chapter: 10, title: "Muvaffaqiyat strategiyasi", page: 148 },
 ];
 
+interface FlipEvent {
+  data: number;
+}
+
+interface IPageFlip {
+  flipNext: () => void;
+  flipPrev: () => void;
+}
+
+interface IFlipBook {
+  pageFlip: () => IPageFlip | null;
+}
+
 const FlipBookPreview = () => {
-  const bookRef = useRef<any>(null);
+  const bookRef = useRef<IFlipBook>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const totalPages = 6;
   const navigate = useNavigate();
@@ -43,7 +57,7 @@ const FlipBookPreview = () => {
     bookRef.current?.pageFlip()?.flipPrev();
   }, []);
 
-  const onFlip = useCallback((e: any) => {
+  const onFlip = useCallback((e: FlipEvent) => {
     setCurrentPage(e.data);
   }, []);
 
@@ -75,12 +89,13 @@ const FlipBookPreview = () => {
           >
             <div className="space-y-4">
               <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground">
-                Skyward Mentor: <span className="text-gold">Cabin Crew Guide</span>
+                Skyward Mentor:{" "}
+                <span className="text-gold">Shohruh Mirzayev</span>
               </h3>
               <p className="text-muted-foreground text-lg leading-relaxed">
-                Emirates bort kuzatuvchisi Shohruhning 3 yillik tajribasidan yozilgan 
-                to'liq qo'llanma. CV tayyorlashdan tortib, final intervyugacha — 
-                barcha sirlar bir kitobda.
+                Emirates bort kuzatuvchisi Shohruhning 3 yillik tajribasidan
+                yozilgan to'liq qo'llanma. CV tayyorlashdan tortib, final
+                intervyugacha — barcha sirlar bir kitobda.
               </p>
             </div>
 
@@ -96,11 +111,15 @@ const FlipBookPreview = () => {
               </div>
               <div className="bg-card/50 border border-border rounded-xl p-4 text-center">
                 <div className="text-3xl font-bold text-gold mb-1">50+</div>
-                <div className="text-muted-foreground text-sm">Intervyu savollari</div>
+                <div className="text-muted-foreground text-sm">
+                  Intervyu savollari
+                </div>
               </div>
               <div className="bg-card/50 border border-border rounded-xl p-4 text-center">
                 <div className="text-3xl font-bold text-gold mb-1">6 oy</div>
-                <div className="text-muted-foreground text-sm">Kirish muddati</div>
+                <div className="text-muted-foreground text-sm">
+                  Kirish muddati
+                </div>
               </div>
             </div>
 
@@ -147,7 +166,7 @@ const FlipBookPreview = () => {
             <div className="relative mb-8" style={{ perspective: "2000px" }}>
               {/* Book Shadow */}
               <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-[260px] h-[40px] bg-black/40 blur-2xl rounded-full" />
-              
+
               {/* 3D Wrapper - slight tilt for 3D effect */}
               <div
                 className="relative"
@@ -157,12 +176,11 @@ const FlipBookPreview = () => {
                 }}
               >
                 {/* Book spine effect */}
-                <div 
+                <div
                   className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-amber-900 via-amber-800 to-transparent rounded-l-sm"
                   style={{ transform: "translateZ(-2px)" }}
                 />
-                
-                {/* @ts-ignore */}
+
                 <HTMLFlipBook
                   ref={bookRef}
                   width={280}
@@ -212,7 +230,7 @@ const FlipBookPreview = () => {
                       Skyward Mentor
                     </h1>
                     <p className="text-muted-foreground text-xs mb-4">
-                      Cabin Crew Guide
+                      Osmonni zabt eting
                     </p>
                     <div className="w-12 h-px bg-gold/50 mb-4" />
                     <p className="text-foreground/80 text-xs italic">
@@ -291,13 +309,14 @@ const FlipBookPreview = () => {
                       Assalomu alaykum, aziz o'quvchi!
                     </p>
                     <p className="text-foreground/80 text-xs leading-relaxed mb-3">
-                      Mening ismim Shohruh. Men 3 yildan ortiq vaqt davomida Emirates 
-                      aviakompaniyasida bort kuzatuvchisi sifatida ishlayman.
+                      Mening ismim Shohruh. Men 3 yildan ortiq vaqt davomida
+                      Emirates aviakompaniyasida bort kuzatuvchisi sifatida
+                      ishlayman.
                     </p>
                     <p className="text-foreground/80 text-xs leading-relaxed">
-                      Bu kitobni yozishdan maqsadim — o'z tajribamni siz bilan 
-                      bo'lishish va sizga bort kuzatuvchisi bo'lish yo'lida yordam 
-                      berishdir...
+                      Bu kitobni yozishdan maqsadim — o'z tajribamni siz bilan
+                      bo'lishish va sizga bort kuzatuvchisi bo'lish yo'lida
+                      yordam berishdir...
                     </p>
                   </Page>
 
@@ -305,10 +324,11 @@ const FlipBookPreview = () => {
                   <Page className="relative overflow-hidden bg-amber-50/50">
                     <div className="absolute inset-0 p-5">
                       <p className="text-foreground/30 text-xs leading-relaxed blur-[2px] select-none">
-                        ...men har bir savolga qanday javob berish kerakligini batafsil 
-                        tushuntiraman. Emirates intervyusi odatda 3 bosqichdan iborat: 
-                        Open Day, Assessment Day va Final Interview. Har bir bosqichda 
-                        nimalar kutilishini bilish juda muhim...
+                        ...men har bir savolga qanday javob berish kerakligini
+                        batafsil tushuntiraman. Emirates intervyusi odatda 3
+                        bosqichdan iborat: Open Day, Assessment Day va Final
+                        Interview. Har bir bosqichda nimalar kutilishini bilish
+                        juda muhim...
                       </p>
                     </div>
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-foreground/5 backdrop-blur-[1px]">
@@ -320,7 +340,12 @@ const FlipBookPreview = () => {
                         <p className="text-muted-foreground text-[10px] mb-3">
                           To'liq kitobni o'qish uchun sotib oling
                         </p>
-                        <Button variant="hero" size="sm" className="text-xs h-8" onClick={() => navigate("/purchase")}>
+                        <Button
+                          variant="hero"
+                          size="sm"
+                          className="text-xs h-8"
+                          onClick={() => navigate("/purchase")}
+                        >
                           Sotib olish
                         </Button>
                       </div>
