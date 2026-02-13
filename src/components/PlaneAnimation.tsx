@@ -17,15 +17,39 @@ interface SectionTarget {
 }
 
 const SECTION_TARGETS: SectionTarget[] = [
-  { id: "hero", tooltip: "🔥 Orzuingizdagi kasbga birinchi qadam!", rotation: 130 },
-  { id: "lead-capture", tooltip: "📝 30 soniyada ro'yxatdan o'ting — bepul!", rotation: 45 },
-  { id: "expert-story", tooltip: "👨‍✈️ 3 yillik Emirates tajribasi siz uchun!", rotation: -20 },
-  { id: "book-features", tooltip: "📖 10 ta bob — har biri sizni yaqinlashtiradi!", rotation: 30 },
-  { id: "flipbook-preview", tooltip: "👀 Bepul sahifalarni hoziroq varaqlab ko'ring!", rotation: 50 },
-  { id: "bonus-section", tooltip: "🎁 Faqat bugun — maxsus bonuslar!", rotation: -30 },
+  {
+    id: "hero",
+    tooltip: "🔥 Orzuingizdagi kasbga birinchi qadam!",
+    rotation: 130,
+  },
+  {
+    id: "lead-capture",
+    tooltip: "📝 30 soniyada ro'yxatdan o'ting — bepul!",
+    rotation: 45,
+  },
+  {
+    id: "expert-story",
+    tooltip: "👨‍✈️ 3 yillik Emirates tajribasi siz uchun!",
+    rotation: -20,
+  },
+  {
+    id: "book-features",
+    tooltip: "📖 10 ta bob — har biri sizni yaqinlashtiradi!",
+    rotation: 30,
+  },
+  {
+    id: "flipbook-preview",
+    tooltip: "👀 Bepul sahifalarni hoziroq varaqlab ko'ring!",
+    rotation: 50,
+  },
+  {
+    id: "bonus-section",
+    tooltip: "🎁 Faqat bugun — maxsus bonuslar!",
+    rotation: -30,
+  },
 ];
 
-const PlaneAnimation = () => {
+const PlaneCursor = () => {
   const isMobile = useIsMobile();
   const [planePos, setPlanePos] = useState({ x: -100, y: -100 });
   const [trail, setTrail] = useState<TrailDot[]>([]);
@@ -77,12 +101,15 @@ const PlaneAnimation = () => {
               // Show tooltip briefly on section change
               setShowTooltip(true);
               if (tooltipTimer.current) clearTimeout(tooltipTimer.current);
-              tooltipTimer.current = setTimeout(() => setShowTooltip(false), 3000);
+              tooltipTimer.current = setTimeout(
+                () => setShowTooltip(false),
+                3000,
+              );
             }
           }
         });
       },
-      { threshold: 0.3 }
+      { threshold: 0.3 },
     );
 
     const timer = setTimeout(() => {
@@ -214,21 +241,32 @@ const PlaneAnimation = () => {
             left: planePos.x + 22,
             top: planePos.y - 38,
             opacity: showTooltip ? 1 : 0,
-            transform: showTooltip ? "scale(1) translateY(0)" : "scale(0.7) translateY(8px)",
+            transform: showTooltip
+              ? "scale(1) translateY(0)"
+              : "scale(0.7) translateY(8px)",
             transformOrigin: "bottom left",
-            transition: "opacity 0.4s cubic-bezier(0.16,1,0.3,1), transform 0.4s cubic-bezier(0.16,1,0.3,1)",
+            transition:
+              "opacity 0.4s cubic-bezier(0.16,1,0.3,1), transform 0.4s cubic-bezier(0.16,1,0.3,1)",
           }}
         >
           <div className="bg-foreground/90 text-primary-foreground text-xs font-body px-3 py-1.5 rounded-lg whitespace-nowrap shadow-lg backdrop-blur-sm border border-gold/20">
             {currentTooltip}
-            <div
-              className="absolute -bottom-1 left-2 w-2 h-2 bg-foreground/90 rotate-45"
-            />
+            <div className="absolute -bottom-1 left-2 w-2 h-2 bg-foreground/90 rotate-45" />
           </div>
         </div>
       )}
     </div>
   );
+};
+
+const PlaneAnimation = () => {
+  const location = useLocation();
+  const isMobile = useIsMobile();
+
+  // Only show on home page and desktop
+  if (isMobile || location.pathname !== "/") return null;
+
+  return <PlaneCursor />;
 };
 
 export default PlaneAnimation;
