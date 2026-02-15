@@ -5,7 +5,7 @@ import { Award, MapPin, Users } from "lucide-react";
 const stats = [
   { icon: Award, value: "3+", label: "Yillik tajriba" },
   { icon: MapPin, value: "Dubay", label: "Yashash joyi" },
-  { icon: Users, value: "50+", label: "Muvaffaqiyatli shogirdlar" },
+  { icon: Users, value: "20+", label: "Muvaffaqiyatli shogirdlar" },
 ];
 
 const ExpertStory = () => {
@@ -56,10 +56,16 @@ const ExpertStory = () => {
               tanishing
             </h2>
             <p className="text-muted-foreground text-lg leading-relaxed mb-8">
-              Men 3 yildan ortiq vaqt davomida Emirates aviakompaniyasida bort
-              kuzatuvchisi sifatida ishlayman. Dubayda yashab, dunyoning 50 dan
-              ortiq mamlakatlarini ko'rdim. Endi o'z tajribamni siz bilan
-              bo'lishmoqchiman — bu kitob orqali.
+              Keling, avvalo qisqacha tanishib olsak. Mening ismim Shohruh. Men
+              3 yildan ortiq vaqt davomida Dubayda joylashgan Emirates
+              aviakompaniyasida bort kuzatuvchi sifatida ishlayman. Shu vaqt
+              ichida dunyoning 50 dan ortiq mamlakatlarida bo‘ldim va bu kasbni
+              ichidan o‘rganishga ulgurdim. Bu yo‘lni o‘zim bosib o‘tganman —
+              hujjat topshirish, tanlov, intervyu va ishning o‘zi. Shuning uchun
+              ish vaqtidan tashqari bort kuzatuvchi bo‘lishni istaganlar bilan
+              tajribamni bo‘lishib kelaman. Bugungi kunda mening maslahatlarim
+              orqali tayyorlangan yigit-qizlar Emirates, Etihad va Air Arabia
+              kabi aviakompaniyalarda ishlashni boshlashgan
             </p>
 
             {/* Stats */}

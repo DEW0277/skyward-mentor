@@ -40,15 +40,15 @@ const HeroSection = () => {
           </motion.div>
 
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold text-primary-foreground leading-tight mb-6">
-            Osmonni zabt etishni{" "}
+            Bort kuzatuvchi bo'lishni{" "}
             <span className="text-gradient-gold italic">mutaxassisdan</span>{" "}
             o'rganing
           </h1>
 
           <p className="text-lg md:text-xl text-primary-foreground/80 font-body font-light mb-8 max-w-lg">
-            Bort kuzatuvchisi bo'lishning barcha sirlari — CV tayyorlashdan
-            tortib, Emirates intervyusigacha. Shohruhning 3 yillik tajribasidan
-            foydalaning.
+            Hujjatlarni tayyorlashdan tortib imtihon kunigacha bo‘lgan barcha
+            bosqichlar bitta qo‘llanmada. Nazariya emas, real tajriba asosida
+            yozilgan.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">

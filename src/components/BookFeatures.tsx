@@ -15,53 +15,53 @@ import {
 const features = [
   {
     icon: FileText,
-    title: "CV tayyorlash sirlari",
-    desc: "Emirates standartlariga mos professional CV yaratish",
+    title: "Aviakompaniyalar",
+    desc: "Qayerlarda ishlash mumkin, qaysi kompaniyalar real imkoniyat beradi va nimaga e’tibor berish kerak.",
   },
   {
     icon: MessageSquare,
-    title: "Intervyu savollari",
-    desc: "Eng ko'p beriladigan savollar va ideal javoblar",
+    title: "Talablar",
+    desc: "Sizdan nimalar talab qilinadi, qaysi joylarda mos kelasiz va qayerini yaxshilash mumkinligi haqida.",
   },
   {
     icon: Briefcase,
-    title: "Open Day tayyorgarlik",
-    desc: "Open Day va Assessment Day uchun to'liq qo'llanma",
+    title: "Hujjatlarni tayyorlash",
+    desc: "Kerakli hujjatlarni qanday tayyorlash va aviakompaniyalarga to‘g‘ri topshirish bo‘yicha aniq yo‘l.",
   },
   {
     icon: Star,
-    title: "Grooming standartlari",
-    desc: "Tashqi ko'rinish va kiyinish qoidalari",
+    title: "CV tayyorlash sirlari",
+    desc: "Aviakompaniyalarga mos professional CV qanday bo‘lishi va uni qanday yozish kerakligi.",
   },
   {
     icon: Plane,
-    title: "Parvoz tajribasi",
-    desc: "Real parvozlardagi vaziyatlar va yechimlar",
+    title: "Grooming standartlari",
+    desc: "Tashqi ko‘rinish, kiyinish va mayda detallar — birinchi taassurot qanday shakllanadi.",
   },
   {
     icon: Heart,
-    title: "Sog'liq talablari",
-    desc: "Tibbiy ko'rik va sog'liq standartlari haqida",
+    title: "Ingliz tili tayyorgarligi",
+    desc: "Imtihon va intervyu uchun kerak bo‘ladigan ingliz tili, aviation English va foydali maslahatlar.",
   },
   {
     icon: Shield,
-    title: "Xavfsizlik bilimi",
-    desc: "Bort xavfsizligi bo'yicha asosiy bilimlar",
+    title: "Imtihon kuni",
+    desc: "Assessment Day qanday o‘tadi, qaysi bosqichlar bo‘ladi va ularga qanday tayyorlanish kerak.",
   },
   {
     icon: BookOpen,
-    title: "Ingliz tili tayyorligi",
-    desc: "TOEIC/IELTS va aviation English bo'yicha maslahatlar",
+    title: "Intervyu savollari",
+    desc: "Eng ko‘p beriladigan savollar va ularga ideal javoblar.",
   },
   {
     icon: Camera,
-    title: "Portfolio yaratish",
-    desc: "Professional rasm va video portfolio qo'llanmasi",
+    title: "Muvaffaqiyat strategiyasi",
+    desc: "Birinchi urinishdayoq muvaffaqiyatli bo‘lish uchun fikrlash, harakat va yondashuvlar.",
   },
   {
     icon: Award,
-    title: "Muvaffaqiyat strategiyasi",
-    desc: "Birinchi urinishda muvaffaq bo'lish uchun reja",
+    title: "Savol-javob va foydali ma’lumotlar",
+    desc: "Eng ko‘p keladigan savollar, kerakli saytlar, YouTube kanallar va asqotadigan so‘zlar ro‘yxati.",
   },
 ];
 
@@ -76,15 +76,13 @@ const BookFeatures = () => {
           className="text-center mb-16"
         >
           <span className="text-gold font-body text-sm tracking-[0.2em] uppercase">
-            Kitob tarkibi
+            Kitob haqida
           </span>
           <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mt-2 mb-4">
-            Bu kitob sizga{" "}
-            <span className="text-gradient-gold italic">nima</span> beradi?
+            Kitobda nimalar bor?
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            10 ta muhim bo'lim — har biri sizni orzuingizdagi kasbga bir qadam
-            yaqinlashtiradi
+            10 ta muhim bo‘lim — orzuyingizga olib boradigan aniq qadamlar
           </p>
         </motion.div>
 

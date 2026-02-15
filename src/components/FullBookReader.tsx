@@ -9,8 +9,21 @@ import * as pdfjsLib from "pdfjs-dist";
 // Set worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs`;
 
+interface FlipEvent {
+  data: number;
+}
+
+interface IPageFlip {
+  flipNext: () => void;
+  flipPrev: () => void;
+}
+
+interface IFlipBook {
+  pageFlip: () => IPageFlip | null;
+}
+
 const FullBookReader = () => {
-  const bookRef = useRef<any>(null);
+  const bookRef = useRef<IFlipBook>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [pages, setPages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,8 +79,12 @@ const FullBookReader = () => {
       }
 
       setPages(renderedPages);
-    } catch (err: any) {
-      setError(err.message || "Xatolik yuz berdi");
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : (err as { message?: string })?.message || "Xatolik yuz berdi";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -81,7 +98,7 @@ const FullBookReader = () => {
     bookRef.current?.pageFlip()?.flipPrev();
   }, []);
 
-  const onFlip = useCallback((e: any) => {
+  const onFlip = useCallback((e: FlipEvent) => {
     setCurrentPage(e.data);
   }, []);
 
@@ -97,7 +114,9 @@ const FullBookReader = () => {
   if (error || pages.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <p className="text-muted-foreground text-sm">{error || "Kitob topilmadi"}</p>
+        <p className="text-muted-foreground text-sm">
+          {error || "Kitob topilmadi"}
+        </p>
       </div>
     );
   }
@@ -109,7 +128,6 @@ const FullBookReader = () => {
         animate={{ opacity: 1, scale: 1 }}
         className="relative mb-8"
       >
-        {/* @ts-ignore */}
         <HTMLFlipBook
           ref={bookRef}
           width={320}

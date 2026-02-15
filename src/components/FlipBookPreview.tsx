@@ -1,34 +1,31 @@
-import { useRef, useState, useCallback, forwardRef } from "react";
+import { useRef, useState, useCallback, useEffect, forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
 import HTMLFlipBook from "react-pageflip";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Lock, BookOpen } from "lucide-react";
-import bookCover from "@/assets/book-cover.jpg";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Lock,
+  BookOpen,
+  Loader2,
+} from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import * as pdfjsLib from "pdfjs-dist";
+
+// Set worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs`;
 
 // Page component MUST use forwardRef for react-pageflip to work
 const Page = forwardRef<
   HTMLDivElement,
   { children: React.ReactNode; className?: string }
 >(({ children, className = "" }, ref) => (
-  <div ref={ref} className={`bg-background ${className}`}>
+  <div ref={ref} className={`bg-background shadow-lg ${className}`}>
     {children}
   </div>
 ));
 Page.displayName = "Page";
-
-const tocItems = [
-  { chapter: 1, title: "CV tayyorlash sirlari", page: 8 },
-  { chapter: 2, title: "Intervyu savollari va javoblar", page: 24 },
-  { chapter: 3, title: "Open Day tayyorgarlik", page: 42 },
-  { chapter: 4, title: "Grooming standartlari", page: 58 },
-  { chapter: 5, title: "Parvoz tajribasi", page: 72 },
-  { chapter: 6, title: "Sog'liq talablari", page: 88 },
-  { chapter: 7, title: "Xavfsizlik bilimi", page: 102 },
-  { chapter: 8, title: "Ingliz tili tayyorligi", page: 118 },
-  { chapter: 9, title: "Portfolio yaratish", page: 134 },
-  { chapter: 10, title: "Muvaffaqiyat strategiyasi", page: 148 },
-];
 
 interface FlipEvent {
   data: number;
@@ -37,6 +34,7 @@ interface FlipEvent {
 interface IPageFlip {
   flipNext: () => void;
   flipPrev: () => void;
+  getPageCount: () => number;
 }
 
 interface IFlipBook {
@@ -46,8 +44,76 @@ interface IFlipBook {
 const FlipBookPreview = () => {
   const bookRef = useRef<IFlipBook>(null);
   const [currentPage, setCurrentPage] = useState(0);
-  const totalPages = 6;
+  const [pages, setPages] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    loadPrimaryBook();
+  }, []);
+
+  const loadPrimaryBook = async () => {
+    try {
+      setLoading(true);
+      // Fetch primary book metadata
+      const { data: book, error: bookError } = await supabase
+        .from("books")
+        .select("*")
+        .eq("is_primary", true)
+        .maybeSingle();
+
+      if (bookError) throw bookError;
+      if (!book) {
+        console.error("No primary book found");
+        setError("Kitob topilmadi");
+        setLoading(false);
+        return;
+      }
+
+      // Download PDF from storage
+      const { data: fileData, error: fileError } = await supabase.storage
+        .from("books")
+        .download(book.file_path);
+
+      if (fileError || !fileData) {
+        throw new Error("PDF faylni yuklab bo'lmadi");
+      }
+
+      // Convert to ArrayBuffer and render pages
+      const arrayBuffer = await fileData.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+      // Limit to 3 pages for preview
+      const previewPageCount = Math.min(pdf.numPages, 3);
+      const renderedPages: string[] = [];
+
+      for (let i = 1; i <= previewPageCount; i++) {
+        const page = await pdf.getPage(i);
+        const scale = 1.5; // Adjusted scale for preview
+        const viewport = page.getViewport({ scale });
+
+        const canvas = document.createElement("canvas");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext("2d")!;
+
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        renderedPages.push(canvas.toDataURL("image/jpeg", 0.85));
+      }
+
+      setPages(renderedPages);
+    } catch (err: unknown) {
+      console.error("Error loading book:", err);
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : (err as { message?: string })?.message || "Xatolik yuz berdi";
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const nextPage = useCallback(() => {
     bookRef.current?.pageFlip()?.flipNext();
@@ -61,8 +127,44 @@ const FlipBookPreview = () => {
     setCurrentPage(e.data);
   }, []);
 
+  // Total pages = rendered pages + 1 locked page
+  const totalDisplayPages = pages.length > 0 ? pages.length + 1 : 0;
+
+  if (loading) {
+    return (
+      <section
+        id="flipbook-preview"
+        className="py-24 bg-muted/50 min-h-[600px] flex items-center justify-center"
+      >
+        <div className="flex flex-col items-center">
+          <Loader2 className="w-8 h-8 animate-spin text-gold mb-4" />
+          <p className="text-muted-foreground text-sm">Kitob yuklanmoqda...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section
+        id="flipbook-preview"
+        className="py-24 bg-muted/50 min-h-[400px] flex items-center justify-center"
+      >
+        <div className="text-center">
+          <p className="text-muted-foreground text-sm mb-4">{error}</p>
+          <Button onClick={() => loadPrimaryBook()} variant="outline">
+            Qayta urinish
+          </Button>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section id="flipbook-preview" className="py-24 bg-muted/50">
+    <section
+      id="flipbook-preview"
+      className="py-24 bg-muted/50 overflow-hidden"
+    >
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -90,7 +192,7 @@ const FlipBookPreview = () => {
             <div className="space-y-4">
               <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground">
                 Skyward Mentor:{" "}
-                <span className="text-gold">Shohruh Mirzayev</span>
+                <span className="text-gold">Shohruh Abdulazizov</span>
               </h3>
               <p className="text-muted-foreground text-lg leading-relaxed">
                 Emirates bort kuzatuvchisi Shohruhning 3 yillik tajribasidan
@@ -123,35 +225,22 @@ const FlipBookPreview = () => {
               </div>
             </div>
 
-            {/* TOC Preview */}
-            <div className="bg-card/30 border border-border rounded-xl p-6">
-              <h4 className="font-display font-bold text-foreground mb-4 flex items-center gap-2">
+            {/* CTA for full book */}
+            <div className="bg-card/30 border border-border rounded-xl p-6 text-center lg:text-left">
+              <h4 className="font-display font-bold text-foreground mb-2 flex items-center justify-center lg:justify-start gap-2">
                 <BookOpen className="w-5 h-5 text-gold" />
-                Mundarija
+                To'liq kitobni o'qishni istaysizmi?
               </h4>
-              <div className="space-y-2">
-                {tocItems.slice(0, 5).map((item) => (
-                  <div
-                    key={item.chapter}
-                    className="flex items-center justify-between text-sm group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="w-6 h-6 rounded-full bg-gold/10 flex items-center justify-center text-xs font-bold text-gold">
-                        {item.chapter}
-                      </span>
-                      <span className="text-foreground/80 group-hover:text-gold transition-colors">
-                        {item.title}
-                      </span>
-                    </div>
-                    <span className="text-muted-foreground text-xs">
-                      {item.page}-bet
-                    </span>
-                  </div>
-                ))}
-                <div className="text-muted-foreground text-sm pt-2 border-t border-border mt-3">
-                  ... va yana 5 ta bob
-                </div>
-              </div>
+              <p className="text-muted-foreground text-sm mb-4">
+                Hoziroq xarid qiling va muvaffaqiyat sari qadam tashlang!
+              </p>
+              <Button
+                onClick={() => navigate("/purchase")}
+                className="w-full lg:w-auto"
+                variant="hero"
+              >
+                Sotib olish
+              </Button>
             </div>
           </motion.div>
 
@@ -214,136 +303,46 @@ const FlipBookPreview = () => {
                   clickEventForward={true}
                   useMouseEvents={true}
                 >
-                  {/* Cover */}
-                  <Page className="overflow-hidden">
-                    <img
-                      src={bookCover}
-                      alt="Skyward Mentor Book Cover"
-                      className="w-full h-full object-cover"
-                    />
-                  </Page>
+                  {/* Dynamic Pages */}
+                  {pages.map((src, index) => (
+                    <Page key={index} className="overflow-hidden bg-white">
+                      <img
+                        src={src}
+                        alt={`Sahifa ${index + 1}`}
+                        className="w-full h-full object-contain"
+                      />
+                    </Page>
+                  ))}
 
-                  {/* Title Page */}
-                  <Page className="p-6 flex flex-col items-center justify-center text-center bg-gradient-to-br from-amber-50 to-orange-50">
-                    <div className="text-gold text-4xl mb-3">✈️</div>
-                    <h1 className="font-display text-xl font-bold text-foreground mb-1">
-                      Skyward Mentor
-                    </h1>
-                    <p className="text-muted-foreground text-xs mb-4">
-                      Osmonni zabt eting
-                    </p>
-                    <div className="w-12 h-px bg-gold/50 mb-4" />
-                    <p className="text-foreground/80 text-xs italic">
-                      Muallif: Shohruh
-                    </p>
-                    <p className="text-muted-foreground text-[10px] mt-2">
-                      © 2025 Skyward Mentor
-                    </p>
-                  </Page>
-
-                  {/* TOC Page 1 */}
-                  <Page className="p-5 bg-amber-50/50">
-                    <div className="border-b-2 border-gold/30 pb-2 mb-3">
-                      <h2 className="font-display text-base font-bold text-foreground flex items-center gap-2">
-                        <BookOpen className="w-4 h-4 text-gold" />
-                        Mundarija
-                      </h2>
-                    </div>
-                    <div className="space-y-2">
-                      {tocItems.slice(0, 5).map((item) => (
-                        <div
-                          key={item.chapter}
-                          className="flex items-center justify-between text-xs group"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="w-5 h-5 rounded-full bg-gold/20 flex items-center justify-center text-[10px] font-bold text-gold">
-                              {item.chapter}
-                            </span>
-                            <span className="text-foreground/80">
-                              {item.title}
-                            </span>
-                          </div>
-                          <span className="text-muted-foreground text-[10px]">
-                            {item.page}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </Page>
-
-                  {/* TOC Page 2 */}
-                  <Page className="p-5 bg-amber-50/50">
-                    <div className="border-b-2 border-gold/30 pb-2 mb-3">
-                      <h2 className="font-display text-base font-bold text-foreground">
-                        Mundarija (davomi)
-                      </h2>
-                    </div>
-                    <div className="space-y-2">
-                      {tocItems.slice(5).map((item) => (
-                        <div
-                          key={item.chapter}
-                          className="flex items-center justify-between text-xs group"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="w-5 h-5 rounded-full bg-gold/20 flex items-center justify-center text-[10px] font-bold text-gold">
-                              {item.chapter}
-                            </span>
-                            <span className="text-foreground/80">
-                              {item.title}
-                            </span>
-                          </div>
-                          <span className="text-muted-foreground text-[10px]">
-                            {item.page}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </Page>
-
-                  {/* Intro Page */}
-                  <Page className="p-5 bg-amber-50/50">
-                    <h2 className="font-display text-base font-bold text-foreground mb-3 border-b border-gold/30 pb-2">
-                      Kirish
-                    </h2>
-                    <p className="text-foreground/80 text-xs leading-relaxed mb-3">
-                      Assalomu alaykum, aziz o'quvchi!
-                    </p>
-                    <p className="text-foreground/80 text-xs leading-relaxed mb-3">
-                      Mening ismim Shohruh. Men 3 yildan ortiq vaqt davomida
-                      Emirates aviakompaniyasida bort kuzatuvchisi sifatida
-                      ishlayman.
-                    </p>
-                    <p className="text-foreground/80 text-xs leading-relaxed">
-                      Bu kitobni yozishdan maqsadim — o'z tajribamni siz bilan
-                      bo'lishish va sizga bort kuzatuvchisi bo'lish yo'lida
-                      yordam berishdir...
-                    </p>
-                  </Page>
-
-                  {/* Locked Page */}
+                  {/* Locked Page (The 4th page) */}
                   <Page className="relative overflow-hidden bg-amber-50/50">
                     <div className="absolute inset-0 p-5">
-                      <p className="text-foreground/30 text-xs leading-relaxed blur-[2px] select-none">
-                        ...men har bir savolga qanday javob berish kerakligini
-                        batafsil tushuntiraman. Emirates intervyusi odatda 3
-                        bosqichdan iborat: Open Day, Assessment Day va Final
-                        Interview. Har bir bosqichda nimalar kutilishini bilish
-                        juda muhim...
+                      {/* Blurry text background */}
+                      <p className="text-foreground/30 text-xs leading-relaxed blur-[2px] select-none break-words">
+                        ...davomi uchun to'lov qiling. Ushbu kitobda siz
+                        Emirates va boshqa nufuzli aviakompaniyalarga ishga
+                        kirish sirlarini o'rganasiz. Intervyu jarayonlari,
+                        psixologik testlar, va grooming standartlari haqida
+                        batafsil ma'lumotlar... Kelajagingiz uchun sarmoya
+                        kiriting va orzuingizdagi kasb eganiga aylaning. Lorem
+                        ipsum dolor sit amet, consectetur adipiscing elit. Sed
+                        do eiusmod tempor incididunt ut labore et dolore magna
+                        aliqua.
                       </p>
                     </div>
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-foreground/5 backdrop-blur-[1px]">
-                      <div className="bg-background/95 rounded-lg p-4 text-center shadow-lg border border-border">
+                      <div className="bg-background/95 rounded-lg p-4 text-center shadow-lg border border-border mx-4">
                         <Lock className="w-8 h-8 text-gold mx-auto mb-2" />
                         <h3 className="font-display font-bold text-foreground text-sm mb-1">
-                          Qolgan 90% qism
+                          Davomini o'qish uchun
                         </h3>
                         <p className="text-muted-foreground text-[10px] mb-3">
-                          To'liq kitobni o'qish uchun sotib oling
+                          To'liq kitobni xarid qiling
                         </p>
                         <Button
                           variant="hero"
                           size="sm"
-                          className="text-xs h-8"
+                          className="text-xs h-8 w-full"
                           onClick={() => navigate("/purchase")}
                         >
                           Sotib olish
@@ -368,14 +367,14 @@ const FlipBookPreview = () => {
               </Button>
 
               <span className="text-sm text-muted-foreground min-w-[80px] text-center font-medium">
-                {currentPage + 1} / {totalPages}
+                {currentPage + 1} / {totalDisplayPages}
               </span>
 
               <Button
                 variant="outline"
                 size="icon"
                 onClick={nextPage}
-                disabled={currentPage >= totalPages - 1}
+                disabled={currentPage >= totalDisplayPages - 1}
                 className="rounded-full h-10 w-10"
               >
                 <ChevronRight className="w-5 h-5" />
