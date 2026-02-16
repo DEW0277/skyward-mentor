@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import expertImage from "@/assets/expert-portrait.jpg";
+import expertImage from "@/assets/expert_new.jpg";
 import { Award, MapPin, Users } from "lucide-react";
 
 const stats = [

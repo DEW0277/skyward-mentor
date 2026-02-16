@@ -235,23 +235,28 @@ const Admin = () => {
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-2 mb-6">
-          {(["all", "pending", "approved", "blocked"] as const).map((f) => (
-            <Button
-              key={f}
-              variant={filter === f ? "premium" : "outline"}
-              size="sm"
-              onClick={() => setFilter(f)}
-            >
-              {f === "all"
-                ? "Hammasi"
-                : f === "pending"
-                  ? "Kutilmoqda"
-                  : f === "approved"
-                    ? "Tasdiqlangan"
-                    : "Bloklangan"}
-            </Button>
-          ))}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <div className="bg-muted p-1 rounded-lg inline-flex">
+            {(["all", "pending", "approved", "blocked"] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  filter === f
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                }`}
+              >
+                {f === "all"
+                  ? "Barchasi"
+                  : f === "pending"
+                    ? "Kutilmoqda"
+                    : f === "approved"
+                      ? "Tasdiqlangan"
+                      : "Bloklangan"}
+              </button>
+            ))}
+          </div>
           <Button
             variant="outline"
             size="sm"
@@ -301,13 +306,14 @@ const Admin = () => {
                     <TableCell>{lead.age} yosh</TableCell>
                     <TableCell>
                       <Badge
-                        variant={
+                        variant="outline"
+                        className={`${
                           lead.status === "approved"
-                            ? "default"
+                            ? "bg-green-100 text-green-700 border-green-200 hover:bg-green-100"
                             : lead.status === "blocked"
-                              ? "destructive"
-                              : "secondary"
-                        }
+                              ? "bg-red-100 text-red-700 border-red-200 hover:bg-red-100"
+                              : "bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-100"
+                        }`}
                       >
                         {lead.status === "pending"
                           ? "Kutilmoqda"
