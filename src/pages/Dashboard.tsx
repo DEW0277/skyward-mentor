@@ -167,6 +167,12 @@ const Dashboard = () => {
                 <Button variant="outline" onClick={() => navigate("/")}>
                   Bosh sahifaga
                 </Button>
+                {isAdmin && (
+                  <Button variant="default" onClick={() => navigate("/admin")}>
+                    <Shield className="w-4 h-4 mr-2" />
+                    Admin Panel
+                  </Button>
+                )}
                 <Button variant="hero" onClick={handleLogout}>
                   Chiqish
                 </Button>
@@ -201,7 +207,7 @@ const Dashboard = () => {
             </Button>
             {isAdmin && (
               <Button
-                variant="outline"
+                variant="default"
                 size="sm"
                 onClick={() => navigate("/admin")}
               >

@@ -11,7 +11,7 @@ BEGIN
   VALUES (NEW.id, NEW.email, NEW.raw_user_meta_data->>'full_name');
   
   -- Auto-assign admin role for specific email
-  IF NEW.email = 'shoxruhadmin@gmail.com' THEN
+  IF NEW.email = 'shohruh_abdulazizov@gmail.com' THEN
     INSERT INTO public.user_roles (user_id, role)
     VALUES (NEW.id, 'admin');
   ELSE

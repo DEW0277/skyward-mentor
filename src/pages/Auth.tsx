@@ -42,13 +42,17 @@ const Auth = () => {
         }
 
         const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
+          email: email,
+          password: password,
         });
 
         if (error) {
           if (error.message.includes("Invalid login credentials")) {
             setError("Email yoki parol noto'g'ri");
+          } else if (error.message.includes("Email not confirmed")) {
+            setError(
+              "Email manzilingiz tasdiqlanmagan. Iltimos, emailingizni tekshiring.",
+            );
           } else {
             setError(error.message);
           }
@@ -56,7 +60,8 @@ const Auth = () => {
           return;
         }
 
-        navigate("/");
+        // Check if user has admin role - this will be handled by the protected route/dashboard logic
+        navigate("/dashboard");
       } else {
         const result = signupSchema.safeParse({ email, password, fullName });
         if (!result.success) {
@@ -65,11 +70,11 @@ const Auth = () => {
           return;
         }
 
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/admin`,
+            emailRedirectTo: `${window.location.origin}/dashboard`,
             data: {
               full_name: fullName,
             },
@@ -86,18 +91,15 @@ const Auth = () => {
           return;
         }
 
-        // Auto-confirmed, log in automatically
-        const { error: loginError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (loginError) {
-          setError("Ro'yxatdan o'tdingiz! Iltimos, kiring.");
-          setIsLogin(true);
-          setLoading(false);
-          return;
+        // Immediate redirect to dashboard - assuming email confirmation is disabled in Supabase
+        if (data.session) {
+          navigate("/dashboard");
+        } else {
+          // Fallback just in case confirmation is still on, but we want to try to let them in or show message
+          // But per requirement "Disable Email Confirmation", we expect session to be present.
+          // If not, we still redirect to dashboard where they might hit a protection wall or we can just redirect.
+          navigate("/dashboard");
         }
-        navigate("/");
       }
     } catch (err) {
       setError("Xatolik yuz berdi. Qayta urinib ko'ring.");
@@ -200,8 +202,8 @@ const Auth = () => {
               {loading
                 ? "Yuklanmoqda..."
                 : isLogin
-                ? "Kirish"
-                : "Ro'yxatdan o'tish"}
+                  ? "Kirish"
+                  : "Ro'yxatdan o'tish"}
             </Button>
           </form>
 

@@ -74,11 +74,18 @@ const AdminBookManager = () => {
     try {
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
-        const filePath = `${session.user.id}/${Date.now()}_${file.name}`;
+        // Sanitize filename: remove special chars, keep only alphanumeric, dots, dashes, underscores
+        const sanitizedName = file.name
+          .replace(/[^a-zA-Z0-9.\-_]/g, "")
+          .toLowerCase();
+        const filePath = `${session.user.id}/${Date.now()}_${sanitizedName}`;
 
         const { error: uploadError } = await supabase.storage
           .from("books")
-          .upload(filePath, file);
+          .upload(filePath, file, {
+            upsert: true,
+            contentType: file.type || "application/pdf",
+          });
 
         if (uploadError) throw uploadError;
 
@@ -89,7 +96,7 @@ const AdminBookManager = () => {
           title,
           description: newDescription || null,
           file_path: filePath,
-          file_name: file.name,
+          file_name: sanitizedName,
           file_size: file.size,
           is_primary: books.length === 0 && i === 0,
           display_order: books.length + i,
