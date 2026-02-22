@@ -28,6 +28,52 @@ import {
 import AdminBookManager from "@/components/AdminBookManager";
 import { User, Session } from "@supabase/supabase-js";
 
+const AdminTimeLeft = ({ accessUntil }: { accessUntil: string }) => {
+  const [timeLeft, setTimeLeft] = useState<string>("");
+
+  useEffect(() => {
+    const calculateTime = () => {
+      const end = new Date(accessUntil).getTime();
+      const now = new Date().getTime();
+      const diff = end - now;
+
+      if (diff <= 0) {
+        return "Tugagan";
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor(
+        (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+      );
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      return `${days} kun ${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    };
+
+    setTimeLeft(calculateTime());
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTime());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [accessUntil]);
+
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-[11px] text-muted-foreground leading-none">
+        {new Date(accessUntil).toLocaleDateString("uz-UZ")} gacha
+      </span>
+      <Badge
+        variant="outline"
+        className="bg-amber-50 text-amber-700 border-amber-200 w-fit font-mono tracking-tight text-[10px] px-1.5 py-0 leading-tight"
+      >
+        {timeLeft}
+      </Badge>
+    </div>
+  );
+};
+
 interface Lead {
   id: string;
   full_name: string;
@@ -345,11 +391,11 @@ const Admin = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      {lead.access_until
-                        ? new Date(lead.access_until).toLocaleDateString(
-                            "uz-UZ",
-                          )
-                        : "—"}
+                      {lead.access_until ? (
+                        <AdminTimeLeft accessUntil={lead.access_until} />
+                      ) : (
+                        "—"
+                      )}
                     </TableCell>
                     <TableCell>
                       {new Date(lead.created_at).toLocaleDateString("uz-UZ")}

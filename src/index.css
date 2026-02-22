@@ -96,6 +96,22 @@
 
   body {
     @apply bg-background text-foreground font-body antialiased;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* Allow text selection in inputs and textareas */
+  input,
+  textarea {
+    user-select: auto;
+    -webkit-user-select: auto;
+  }
+
+  /* Hide content when printing */
+  @media print {
+    body {
+      display: none !important;
+    }
   }
 
   h1,
