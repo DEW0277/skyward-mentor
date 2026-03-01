@@ -7,22 +7,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plane, User, Calendar, ArrowLeft, Send } from "lucide-react";
 import { z } from "zod";
+import qrCodeImg from "@/assets/payment-qr.png";
 
 const purchaseSchema = z.object({
-  fullName: z.string().trim().min(2, "Ism kamida 2 ta belgi bo'lishi kerak").max(100),
-  age: z.number().min(16, "Yosh kamida 16 bo'lishi kerak").max(65, "Yosh 65 dan oshmasligi kerak"),
+  fullName: z
+    .string()
+    .trim()
+    .min(2, "Ism kamida 2 ta belgi bo'lishi kerak")
+    .max(100),
+  age: z
+    .number()
+    .min(16, "Yosh kamida 16 bo'lishi kerak")
+    .max(65, "Yosh 65 dan oshmasligi kerak"),
 });
 
 const Purchase = () => {
   const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
   const [age, setAge] = useState("");
+  const [price, setPrice] = useState("95000");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) {
         navigate("/auth");
         return;
@@ -48,7 +59,9 @@ const Purchase = () => {
 
     // Save as lead
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const { error: insertError } = await supabase.from("leads").insert({
         full_name: result.data.fullName,
         age: result.data.age,
@@ -56,16 +69,19 @@ const Purchase = () => {
       });
 
       if (insertError) throw insertError;
-    } catch (err: any) {
+    } catch (err) {
       // Continue even if insert fails (might be duplicate)
-      console.log("Lead insert note:", err.message);
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      console.log("Lead insert note:", errorMessage);
     }
 
     // Redirect to Telegram
+    const formattedPrice =
+      price === "95000" ? "1,950,000 so'm" : "2,195,000 so'm";
     const message = encodeURIComponent(
-      `Salom! Men kitob sotib olmoqchiman.\nIsm: ${result.data.fullName}\nYosh: ${result.data.age}`
+      `Salom! Men kitob sotib olmoqchiman.\nIsm: ${result.data.fullName}\nYosh: ${result.data.age}\nTanlangan tarif: ${formattedPrice}`,
     );
-    window.open(`https://t.me/Dew0277?text=${message}`, "_blank");
+    window.open(`https://t.me/shohruh_mentor?text=${message}`, "_blank");
   };
 
   if (loading) {
@@ -139,9 +155,61 @@ const Purchase = () => {
               </div>
             </div>
 
+            <div className="pt-2">
+              <Label className="mb-3 block">Ta'rifni tanlang</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setPrice("95000")}
+                  className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-1 ${
+                    price === "95000"
+                      ? "border-gold bg-gold/10 text-foreground"
+                      : "border-border hover:border-gold/50 text-muted-foreground"
+                  }`}
+                >
+                  <span className="font-display font-bold text-xl">
+                    1,950,000
+                  </span>
+                  <span className="text-xs uppercase tracking-wider">so'm</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPrice("195000")}
+                  className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-1 ${
+                    price === "195000"
+                      ? "border-gold bg-gold/10 text-foreground"
+                      : "border-border hover:border-gold/50 text-muted-foreground"
+                  }`}
+                >
+                  <span className="font-display font-bold text-xl">
+                    2,195,000
+                  </span>
+                  <span className="text-xs uppercase tracking-wider">so'm</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-primary-foreground/5 p-4 rounded-xl border border-border text-center space-y-4 my-2">
+              <p className="text-sm text-muted-foreground">
+                Iltimos, tanlagan tarfingiz bo'yicha quyidagi QR kod orqali
+                to'lovni amalga oshiring
+              </p>
+              <div className="flex justify-center">
+                <img
+                  src={qrCodeImg}
+                  alt="Paynet QR Code"
+                  className="max-w-[200px] w-full rounded-lg shadow-sm"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground/80">
+                To'lov qilganingizdan so'ng chekni skrinshot qilib Telegram
+                orqali yuboring
+              </p>
+            </div>
+
             <Button variant="premium" size="lg" className="w-full gap-2">
               <Send className="w-4 h-4" />
-              Telegram orqali bog'lanish
+              To'lov qildim, Telegram orqali bog'lanish
             </Button>
           </form>
 

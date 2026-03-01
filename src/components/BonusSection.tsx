@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Clock, Gift, FileCheck, Sparkles } from "lucide-react";
+import { Clock, FileCheck, Sparkles, Users, Lock } from "lucide-react";
 
 const DEADLINE = new Date();
-DEADLINE.setDate(10);
+DEADLINE.setDate(5);
+DEADLINE.setHours(23, 59, 59, 999);
 if (DEADLINE.getTime() < Date.now()) {
   DEADLINE.setMonth(DEADLINE.getMonth() + 1);
 }
@@ -62,7 +63,7 @@ const BonusSection = () => {
           <div className="inline-flex items-center gap-2 bg-gold/20 rounded-full px-4 py-2 mb-8">
             <Sparkles className="w-4 h-4 text-gold" />
             <span className="text-gold text-sm font-medium">
-              Cheklangan aksiya
+              Har oyning 1-5 sanalarida!
             </span>
           </div>
 
@@ -71,24 +72,35 @@ const BonusSection = () => {
           </h2>
 
           {/* Bonuses */}
-          <div className="grid sm:grid-cols-2 gap-4 mb-12">
-            <div className="bg-primary-foreground/10 backdrop-blur-sm border border-primary-foreground/20 rounded-xl p-6 text-left">
-              <Gift className="w-8 h-8 text-gold mb-3" />
-              <h3 className="font-display text-lg font-bold text-primary-foreground mb-2">
-                6 oylik kirish huquqi
-              </h3>
-              <p className="text-primary-foreground/70 text-sm">
-                Kitobning barcha yangilanishlarini 6 oy davomida bepul oling
-              </p>
-            </div>
+          <div className="grid lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-1 gap-4 mb-12">
             <div className="bg-primary-foreground/10 backdrop-blur-sm border border-primary-foreground/20 rounded-xl p-6 text-left">
               <FileCheck className="w-8 h-8 text-gold mb-3" />
               <h3 className="font-display text-lg font-bold text-primary-foreground mb-2">
                 Shaxsiy CV tekshiruvi
               </h3>
               <p className="text-primary-foreground/70 text-sm">
-                Shohruh shaxsan sizning CV'ingizni ko'rib chiqib, tavsiyalar
-                beradi
+                O'z CV'ingizni to'liq tekshirtirib olish imkoniyatiga ega
+                bo'lasiz
+              </p>
+            </div>
+            <div className="bg-primary-foreground/10 backdrop-blur-sm border border-primary-foreground/20 rounded-xl p-6 text-left">
+              <Users className="w-8 h-8 text-gold mb-3" />
+              <h3 className="font-display text-lg font-bold text-primary-foreground mb-2">
+                Online Savol-Javob
+              </h3>
+              <p className="text-primary-foreground/70 text-sm">
+                Oyning 14-16 sanalarida umumiy maxsus online darslar (batafsil
+                Telegram'da)
+              </p>
+            </div>
+            <div className="bg-primary-foreground/10 backdrop-blur-sm border border-primary-foreground/20 rounded-xl p-6 text-left">
+              <Lock className="w-8 h-8 text-gold mb-3" />
+              <h3 className="font-display text-lg font-bold text-primary-foreground mb-2">
+                Yopiq Telegram Kanal
+              </h3>
+              <p className="text-primary-foreground/70 text-sm">
+                Yopiq kanalga kirish huquqi. U yerda doimiy ravishda yangiliklar
+                qo'yib boriladi
               </p>
             </div>
           </div>
