@@ -204,15 +204,15 @@ const FlipBookPreview = () => {
             {/* Book Stats */}
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-card/50 border border-border rounded-xl p-4 text-center">
-                <div className="text-3xl font-bold text-gold mb-1">160+</div>
+                <div className="text-3xl font-bold text-gold mb-1">45+</div>
                 <div className="text-muted-foreground text-sm">Sahifalar</div>
               </div>
               <div className="bg-card/50 border border-border rounded-xl p-4 text-center">
-                <div className="text-3xl font-bold text-gold mb-1">10</div>
+                <div className="text-3xl font-bold text-gold mb-1">13</div>
                 <div className="text-muted-foreground text-sm">Boblar</div>
               </div>
               <div className="bg-card/50 border border-border rounded-xl p-4 text-center">
-                <div className="text-3xl font-bold text-gold mb-1">50+</div>
+                <div className="text-3xl font-bold text-gold mb-1">6+</div>
                 <div className="text-muted-foreground text-sm">
                   Intervyu savollari
                 </div>
