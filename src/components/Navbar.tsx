@@ -50,7 +50,7 @@ const Navbar = () => {
               scrolled ? "text-foreground" : "text-primary-foreground"
             }`}
           >
-            Skyward Mentor
+            Shohruh Mentor
           </span>
         </div>
 
