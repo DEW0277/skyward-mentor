@@ -76,8 +76,7 @@ const Purchase = () => {
     }
 
     // Redirect to Telegram
-    const formattedPrice =
-      price === "95000" ? "1,950,000 so'm" : "2,195,000 so'm";
+    const formattedPrice = price === "95000" ? "95,000 so'm" : "195,000 so'm";
     const message = encodeURIComponent(
       `Salom! Men kitob sotib olmoqchiman.\nIsm: ${result.data.fullName}\nYosh: ${result.data.age}\nTanlangan tarif: ${formattedPrice}`,
     );
@@ -167,9 +166,7 @@ const Purchase = () => {
                       : "border-border hover:border-gold/50 text-muted-foreground"
                   }`}
                 >
-                  <span className="font-display font-bold text-xl">
-                    1,950,000
-                  </span>
+                  <span className="font-display font-bold text-xl">95,000</span>
                   <span className="text-xs uppercase tracking-wider">so'm</span>
                 </button>
                 <button
@@ -182,7 +179,7 @@ const Purchase = () => {
                   }`}
                 >
                   <span className="font-display font-bold text-xl">
-                    2,195,000
+                    195,000
                   </span>
                   <span className="text-xs uppercase tracking-wider">so'm</span>
                 </button>
