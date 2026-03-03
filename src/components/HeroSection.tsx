@@ -1,9 +1,12 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-aviation.jpg";
 import { Button } from "@/components/ui/button";
 import { Plane, ChevronDown } from "lucide-react";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+
   return (
     <section
       id="hero"
@@ -52,10 +55,22 @@ const HeroSection = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <Button variant="hero" size="xl">
+            <Button
+              variant="hero"
+              size="xl"
+              onClick={() => navigate("/purchase")}
+            >
               Kitobni sotib olish
             </Button>
-            <Button variant="heroOutline" size="xl">
+            <Button
+              variant="heroOutline"
+              size="xl"
+              onClick={() =>
+                document
+                  .getElementById("flipbook-preview")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+            >
               Bepul sahifalarni ko'rish
             </Button>
           </div>
