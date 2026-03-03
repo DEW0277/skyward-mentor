@@ -14,7 +14,7 @@ const Footer = () => {
           </div>
 
           <p className="text-primary-foreground/50 text-sm text-center">
-            © 2025 Skyward Mentor. Barcha huquqlar himoyalangan.
+            © 2026 Skyward Mentor. Barcha huquqlar himoyalangan.
           </p>
 
           <div className="flex items-center gap-4">

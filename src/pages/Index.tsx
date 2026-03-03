@@ -5,6 +5,7 @@ import ExpertStory from "@/components/ExpertStory";
 import BookFeatures from "@/components/BookFeatures";
 import FlipBookPreview from "@/components/FlipBookPreview";
 import BonusSection from "@/components/BonusSection";
+import InstructionVideos from "@/components/InstructionVideos";
 import Footer from "@/components/Footer";
 
 const Index = () => {
@@ -17,6 +18,7 @@ const Index = () => {
       <BookFeatures />
       <FlipBookPreview />
       <BonusSection />
+      <InstructionVideos />
       <Footer />
     </main>
   );
