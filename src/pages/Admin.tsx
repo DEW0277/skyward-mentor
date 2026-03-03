@@ -24,6 +24,7 @@ import {
   Download,
   BookOpen,
   Home,
+  Trash2,
 } from "lucide-react";
 import AdminBookManager from "@/components/AdminBookManager";
 import { User, Session } from "@supabase/supabase-js";
@@ -164,6 +165,29 @@ const Admin = () => {
             : lead,
         ),
       );
+    }
+
+    setUpdating(null);
+  };
+
+  const deleteLead = async (leadId: string) => {
+    if (
+      !window.confirm(
+        "Haqiqatan ham bu foydalanuvchini o'chirib tashlamoqchimisiz?",
+      )
+    ) {
+      return;
+    }
+
+    setUpdating(leadId);
+
+    const { error } = await supabase.from("leads").delete().eq("id", leadId);
+
+    if (!error) {
+      setLeads(leads.filter((lead) => lead.id !== leadId));
+    } else {
+      console.error("Error deleting lead:", error);
+      alert("Xatolik yuz berdi. Iltimos qayta urinib ko'ring.");
     }
 
     setUpdating(null);
@@ -422,10 +446,21 @@ const Admin = () => {
                             onClick={() => updateLeadStatus(lead.id, "blocked")}
                             disabled={updating === lead.id}
                             className="text-red-600 border-red-200 hover:bg-red-50"
+                            title="Bloklash"
                           >
                             <XCircle className="w-4 h-4" />
                           </Button>
                         )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => deleteLead(lead.id)}
+                          disabled={updating === lead.id}
+                          className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
+                          title="O'chirish"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>

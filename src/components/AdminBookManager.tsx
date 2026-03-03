@@ -39,6 +39,7 @@ const AdminBookManager = () => {
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+  const [editFile, setEditFile] = useState<File | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const { toast } = useToast();
 
@@ -159,28 +160,90 @@ const AdminBookManager = () => {
   };
 
   const handleUpdate = async (bookId: string) => {
+    let newFilePath = undefined;
+    let newFileName = undefined;
+    let newFileSize = undefined;
+
+    setUploading(true);
+
+    if (editFile) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        setUploading(false);
+        return;
+      }
+
+      const sanitizedName = editFile.name
+        .replace(/[^a-zA-Z0-9.\-_]/g, "")
+        .toLowerCase();
+      const filePath = `${session.user.id}/${Date.now()}_${sanitizedName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("books")
+        .upload(filePath, editFile, {
+          upsert: true,
+          contentType: editFile.type || "application/pdf",
+        });
+
+      if (uploadError) {
+        toast({
+          title: "Xatolik",
+          description:
+            "Faylni yuklashda xatolik yuz berdi: " + uploadError.message,
+          variant: "destructive",
+        });
+        setUploading(false);
+        return;
+      }
+
+      // Delete the old file if it exists
+      const oldBook = books.find((b) => b.id === bookId);
+      if (oldBook && oldBook.file_path) {
+        await supabase.storage.from("books").remove([oldBook.file_path]);
+      }
+
+      newFilePath = filePath;
+      newFileName = sanitizedName;
+      newFileSize = editFile.size;
+    }
+
+    const updates: Partial<Book> = {
+      title: editTitle,
+      description: editDescription || null,
+    };
+    if (newFilePath) {
+      updates.file_path = newFilePath;
+      updates.file_name = newFileName;
+      updates.file_size = newFileSize;
+    }
+
     const { error } = await supabase
       .from("books")
-      .update({ title: editTitle, description: editDescription || null })
+      .update(updates)
       .eq("id", bookId);
 
     if (!error) {
-      setBooks(
-        books.map((b) =>
-          b.id === bookId
-            ? { ...b, title: editTitle, description: editDescription || null }
-            : b,
-        ),
-      );
+      setBooks(books.map((b) => (b.id === bookId ? { ...b, ...updates } : b)));
       setEditingId(null);
+      setEditFile(null);
       toast({ title: "Yangilandi" });
+    } else {
+      toast({
+        title: "Xatolik",
+        description: error.message,
+        variant: "destructive",
+      });
     }
+    setUploading(false);
   };
 
   const startEdit = (book: Book) => {
     setEditingId(book.id);
     setEditTitle(book.title);
     setEditDescription(book.description || "");
+    setEditFile(null);
   };
 
   const formatSize = (bytes: number) => {
@@ -261,24 +324,47 @@ const AdminBookManager = () => {
               >
                 <div className="flex-1 min-w-0">
                   {editingId === book.id ? (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <Input
                         value={editTitle}
                         onChange={(e) => setEditTitle(e.target.value)}
+                        placeholder="Kitob sarlavhasi"
                       />
                       <Textarea
                         value={editDescription}
                         onChange={(e) => setEditDescription(e.target.value)}
                         rows={2}
+                        placeholder="Kitob haqida qisqacha"
                       />
+                      <div>
+                        <label className="text-xs text-muted-foreground mb-1 block">
+                          Yangi fayl yuklash (ixtiyoriy, eskisi o'rniga)
+                        </label>
+                        <Input
+                          type="file"
+                          onChange={(e) =>
+                            setEditFile(e.target.files?.[0] || null)
+                          }
+                          accept=".pdf,.doc,.docx,.epub,.txt"
+                        />
+                      </div>
                       <div className="flex gap-2">
-                        <Button size="sm" onClick={() => handleUpdate(book.id)}>
-                          <Save className="w-3 h-3 mr-1" /> Saqlash
+                        <Button
+                          size="sm"
+                          onClick={() => handleUpdate(book.id)}
+                          disabled={uploading}
+                        >
+                          <Save className="w-3 h-3 mr-1" />{" "}
+                          {uploading ? "Saqlanmoqda..." : "Saqlash"}
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => setEditingId(null)}
+                          onClick={() => {
+                            setEditingId(null);
+                            setEditFile(null);
+                          }}
+                          disabled={uploading}
                         >
                           Bekor
                         </Button>
