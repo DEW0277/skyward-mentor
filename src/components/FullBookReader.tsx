@@ -1,8 +1,15 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import HTMLFlipBook from "react-pageflip";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Maximize2,
+  Minimize2,
+  X,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import * as pdfjsLib from "pdfjs-dist";
 
@@ -24,14 +31,29 @@ interface IFlipBook {
 
 const FullBookReader = () => {
   const bookRef = useRef<IFlipBook>(null);
+  const fullscreenBookRef = useRef<IFlipBook>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [pages, setPages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     loadPrimaryBook();
   }, []);
+
+  // Update body overflow when fullscreen state changes
+  useEffect(() => {
+    if (isFullscreen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isFullscreen]);
 
   const loadPrimaryBook = async () => {
     try {
@@ -66,7 +88,7 @@ const FullBookReader = () => {
 
       for (let i = 1; i <= totalPages; i++) {
         const page = await pdf.getPage(i);
-        const scale = 2;
+        const scale = 2; // Keep high resolution for zoom/fullscreen
         const viewport = page.getViewport({ scale });
 
         const canvas = document.createElement("canvas");
@@ -90,17 +112,23 @@ const FullBookReader = () => {
     }
   };
 
-  const nextPage = useCallback(() => {
-    bookRef.current?.pageFlip()?.flipNext();
+  const nextPage = useCallback((isFull = false) => {
+    const ref = isFull ? fullscreenBookRef : bookRef;
+    ref.current?.pageFlip()?.flipNext();
   }, []);
 
-  const prevPage = useCallback(() => {
-    bookRef.current?.pageFlip()?.flipPrev();
+  const prevPage = useCallback((isFull = false) => {
+    const ref = isFull ? fullscreenBookRef : bookRef;
+    ref.current?.pageFlip()?.flipPrev();
   }, []);
 
   const onFlip = useCallback((e: FlipEvent) => {
     setCurrentPage(e.data);
   }, []);
+
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
 
   if (loading) {
     return (
@@ -122,30 +150,49 @@ const FullBookReader = () => {
   }
 
   return (
-    <div className="flex flex-col items-center">
+    <div
+      ref={containerRef}
+      className="flex flex-col items-center relative w-full"
+    >
+      {/* Top right fullscreen toggle for regular view */}
+      {!isFullscreen && (
+        <div className="absolute top-0 right-0 z-10 p-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={toggleFullscreen}
+            className="rounded-full bg-background/80 backdrop-blur-sm shadow-sm hover:bg-background"
+            title="To'liq ekranda o'qish"
+          >
+            <Maximize2 className="w-4 h-4" />
+          </Button>
+        </div>
+      )}
+
+      {/* Regular View */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="relative mb-8"
+        className="relative mb-8 w-full flex justify-center mt-8"
       >
         <HTMLFlipBook
           ref={bookRef}
-          width={320}
-          height={450}
+          width={window.innerWidth < 640 ? 300 : 350}
+          height={window.innerWidth < 640 ? 420 : 500}
           size="stretch"
-          minWidth={300}
+          minWidth={280}
           maxWidth={450}
-          minHeight={420}
-          maxHeight={600}
+          minHeight={400}
+          maxHeight={650}
           showCover={true}
           mobileScrollSupport={true}
           onFlip={onFlip}
-          className="shadow-2xl"
+          className="shadow-2xl mx-auto"
           style={{}}
-          startPage={0}
+          startPage={currentPage}
           drawShadow={true}
           flippingTime={600}
-          usePortrait={true}
+          usePortrait={window.innerWidth < 768}
           startZIndex={0}
           autoSize={true}
           maxShadowOpacity={0.5}
@@ -156,23 +203,27 @@ const FullBookReader = () => {
           useMouseEvents={true}
         >
           {pages.map((src, index) => (
-            <div key={index} className="bg-background shadow-lg">
+            <div
+              key={index}
+              className="bg-white shadow-lg h-full overflow-hidden flex items-center justify-center"
+            >
               <img
                 src={src}
                 alt={`Sahifa ${index + 1}`}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain bg-white"
+                draggable={false}
               />
             </div>
           ))}
         </HTMLFlipBook>
       </motion.div>
 
-      {/* Navigation */}
+      {/* Regular Navigation */}
       <div className="flex items-center gap-4">
         <Button
           variant="outline"
           size="icon"
-          onClick={prevPage}
+          onClick={() => prevPage(false)}
           disabled={currentPage === 0}
           className="rounded-full"
         >
@@ -186,7 +237,7 @@ const FullBookReader = () => {
         <Button
           variant="outline"
           size="icon"
-          onClick={nextPage}
+          onClick={() => nextPage(false)}
           disabled={currentPage >= pages.length - 1}
           className="rounded-full"
         >
@@ -197,6 +248,148 @@ const FullBookReader = () => {
       <p className="text-muted-foreground/60 text-xs mt-4">
         💡 Sahifani bosib yoki suring
       </p>
+
+      {/* Fullscreen Overlay */}
+      <AnimatePresence>
+        {isFullscreen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center"
+          >
+            {/* Top controls */}
+            <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-50 bg-gradient-to-b from-black/80 to-transparent">
+              <div className="text-white/80 text-sm font-medium px-4 py-2 bg-black/40 rounded-full backdrop-blur-md border border-white/10">
+                {currentPage + 1} / {pages.length} - Sahifa
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={toggleFullscreen}
+                  className="rounded-full bg-white/10 hover:bg-white/20 border-white/20 text-white backdrop-blur-md"
+                  title="Kichraytirish"
+                >
+                  <Minimize2 className="w-5 h-5" />
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  onClick={toggleFullscreen}
+                  className="rounded-full bg-red-500/80 hover:bg-red-600 border-none text-white backdrop-blur-md"
+                  title="Yopish"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Centered book area */}
+            <div className="flex-1 w-full h-full flex items-center justify-center p-4 md:p-12 relative max-w-7xl mx-auto">
+              {/* Left Nav Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  prevPage(true);
+                }}
+                disabled={currentPage === 0}
+                className="absolute left-2 md:left-8 z-50 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md border border-white/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed hidden md:flex"
+              >
+                <ChevronLeft className="w-8 h-8" />
+              </button>
+
+              <div className="w-full h-full max-h-[90vh] flex items-center justify-center">
+                <HTMLFlipBook
+                  ref={fullscreenBookRef}
+                  width={
+                    window.innerWidth < 768
+                      ? window.innerWidth - 40
+                      : window.innerWidth / 2 - 100
+                  }
+                  height={window.innerHeight - 120}
+                  size="stretch"
+                  minWidth={300}
+                  maxWidth={800}
+                  minHeight={400}
+                  maxHeight={1200}
+                  showCover={true}
+                  mobileScrollSupport={true}
+                  onFlip={onFlip}
+                  className="shadow-2xl"
+                  style={{}}
+                  startPage={currentPage}
+                  drawShadow={true}
+                  flippingTime={600}
+                  usePortrait={window.innerWidth < 768}
+                  startZIndex={0}
+                  autoSize={true}
+                  maxShadowOpacity={0.8}
+                  showPageCorners={true}
+                  disableFlipByClick={false}
+                  swipeDistance={30}
+                  clickEventForward={true}
+                  useMouseEvents={true}
+                >
+                  {pages.map((src, index) => (
+                    <div
+                      key={index}
+                      className="bg-white shadow-2xl h-full flex items-center justify-center overflow-hidden"
+                    >
+                      <img
+                        src={src}
+                        alt={`Sahifa ${index + 1}`}
+                        className="w-full h-full object-contain bg-white"
+                        draggable={false}
+                      />
+                    </div>
+                  ))}
+                </HTMLFlipBook>
+              </div>
+
+              {/* Right Nav Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  nextPage(true);
+                }}
+                disabled={currentPage >= pages.length - 1}
+                className="absolute right-2 md:right-8 z-50 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md border border-white/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed hidden md:flex"
+              >
+                <ChevronRight className="w-8 h-8" />
+              </button>
+            </div>
+
+            {/* Mobile Bottom Navigation */}
+            <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-6 z-50 md:hidden">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  prevPage(true);
+                }}
+                disabled={currentPage === 0}
+                className="rounded-full w-14 h-14 bg-white/10 hover:bg-white/20 border-white/20 text-white backdrop-blur-md"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  nextPage(true);
+                }}
+                disabled={currentPage >= pages.length - 1}
+                className="rounded-full w-14 h-14 bg-white/10 hover:bg-white/20 border-white/20 text-white backdrop-blur-md"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
