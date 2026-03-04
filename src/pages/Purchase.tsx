@@ -154,7 +154,7 @@ const Purchase = () => {
               </div>
             </div>
 
-            <div className="pt-2">
+            {/* <div className="pt-2">
               <Label className="mb-3 block">Ta'rifni tanlang</Label>
               <div className="grid grid-cols-2 gap-4">
                 <button
@@ -184,7 +184,7 @@ const Purchase = () => {
                   <span className="text-xs uppercase tracking-wider">so'm</span>
                 </button>
               </div>
-            </div>
+            </div> */}
 
             <div className="bg-primary-foreground/5 p-4 rounded-xl border border-border text-center space-y-4 my-2">
               <p className="text-sm text-muted-foreground">

@@ -5,6 +5,7 @@ import ExpertStory from "@/components/ExpertStory";
 import BookFeatures from "@/components/BookFeatures";
 import FlipBookPreview from "@/components/FlipBookPreview";
 import BonusSection from "@/components/BonusSection";
+import PricingSection from "@/components/PricingSection";
 import InstructionVideos from "@/components/InstructionVideos";
 import Footer from "@/components/Footer";
 
@@ -18,6 +19,7 @@ const Index = () => {
       <BookFeatures />
       <FlipBookPreview />
       <BonusSection />
+      <PricingSection />
       <InstructionVideos />
       <Footer />
     </main>
