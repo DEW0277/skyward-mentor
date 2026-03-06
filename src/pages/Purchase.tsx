@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Plane, User, Calendar, ArrowLeft, Send } from "lucide-react";
 import { z } from "zod";
 import qrCodeImg from "@/assets/payment-qr.png";
+import { useToast } from "@/hooks/use-toast";
 
 const purchaseSchema = z.object({
   fullName: z
@@ -23,6 +24,7 @@ const purchaseSchema = z.object({
 
 const Purchase = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [fullName, setFullName] = useState("");
   const [age, setAge] = useState("");
   const [price, setPrice] = useState("95000");
@@ -81,6 +83,14 @@ const Purchase = () => {
       `Salom! Men kitob sotib olmoqchiman.\nIsm: ${result.data.fullName}\nYosh: ${result.data.age}\nTanlangan tarif: ${formattedPrice}`,
     );
     window.open(`https://t.me/shohruh_mentor?text=${message}`, "_blank");
+
+    toast({
+      title: "Muvaffaqiyatli!",
+      description:
+        "So'rovingiz qabul qilindi. Biz siz bilan tez orada bog'lanamiz.",
+    });
+
+    navigate("/");
   };
 
   if (loading) {

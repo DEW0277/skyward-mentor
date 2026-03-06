@@ -286,7 +286,7 @@ const FullBookReader = () => {
             </div>
 
             {/* Centered book area */}
-            <div className="flex-1 w-full h-full flex items-center justify-center p-4 md:p-12 relative max-w-7xl mx-auto">
+            <div className="flex-1 w-full h-full flex items-center justify-center p-2 md:p-12 mt-12 md:mt-0 relative max-w-7xl mx-auto overflow-hidden">
               {/* Left Nav Button */}
               <button
                 onClick={(e) => {
@@ -299,19 +299,23 @@ const FullBookReader = () => {
                 <ChevronLeft className="w-8 h-8" />
               </button>
 
-              <div className="w-full h-full max-h-[90vh] flex items-center justify-center">
+              <div className="w-full h-full flex items-center justify-center pt-8 pb-20 md:py-0">
                 <HTMLFlipBook
                   ref={fullscreenBookRef}
                   width={
                     window.innerWidth < 768
-                      ? window.innerWidth - 40
+                      ? window.innerWidth
                       : window.innerWidth / 2 - 100
                   }
-                  height={window.innerHeight - 120}
+                  height={
+                    window.innerHeight < 768
+                      ? window.innerHeight - 150
+                      : window.innerHeight - 120
+                  }
                   size="stretch"
-                  minWidth={300}
+                  minWidth={280}
                   maxWidth={800}
-                  minHeight={400}
+                  minHeight={350}
                   maxHeight={1200}
                   showCover={true}
                   mobileScrollSupport={true}
@@ -370,7 +374,7 @@ const FullBookReader = () => {
                   prevPage(true);
                 }}
                 disabled={currentPage === 0}
-                className="rounded-full w-14 h-14 bg-white/10 hover:bg-white/20 border-white/20 text-white backdrop-blur-md"
+                className="rounded-full w-14 h-14 bg-white/10 hover:bg-white/20 border-white/20 text-white backdrop-blur-md shadow-lg"
               >
                 <ChevronLeft className="w-6 h-6" />
               </Button>
@@ -382,7 +386,7 @@ const FullBookReader = () => {
                   nextPage(true);
                 }}
                 disabled={currentPage >= pages.length - 1}
-                className="rounded-full w-14 h-14 bg-white/10 hover:bg-white/20 border-white/20 text-white backdrop-blur-md"
+                className="rounded-full w-14 h-14 bg-white/10 hover:bg-white/20 border-white/20 text-white backdrop-blur-md shadow-lg"
               >
                 <ChevronRight className="w-6 h-6" />
               </Button>
