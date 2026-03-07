@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plane, User, Calendar, ArrowLeft, Send } from "lucide-react";
+import { Plane, User, Calendar, ArrowLeft, Send, Lock } from "lucide-react";
 import { z } from "zod";
 import qrCodeImg from "@/assets/payment-qr.png";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,11 @@ const purchaseSchema = z.object({
     .trim()
     .min(2, "Ism kamida 2 ta belgi bo'lishi kerak")
     .max(100),
+  username: z
+    .string()
+    .min(3, "Foydalanuvchi nomi kamida 3 ta belgi bo'lishi kerak")
+    .max(50),
+  password: z.string().min(6, "Parol kamida 6 ta belgi bo'lishi kerak"),
   age: z
     .number()
     .min(16, "Yosh kamida 16 bo'lishi kerak")
@@ -26,61 +31,94 @@ const Purchase = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [age, setAge] = useState("");
   const [price, setPrice] = useState("95000");
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/auth");
-        return;
-      }
-      setLoading(false);
-    };
-    checkAuth();
-  }, [navigate]);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setLoading(true);
 
     const result = purchaseSchema.safeParse({
       fullName,
+      username,
+      password,
       age: parseInt(age),
     });
 
     if (!result.success) {
       setError(result.error.errors[0].message);
+      setLoading(false);
       return;
     }
 
-    // Save as lead
+    const dummyEmail = `${username}@skyward.local`;
+
     try {
+      // Step 1: Try to login
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: dummyEmail,
+        password: password,
+      });
+
+      if (authError) {
+        if (authError.message.includes("Invalid login credentials")) {
+          // User doesn't exist or wrong password. Try sign up
+          const { data: signUpData, error: signUpError } =
+            await supabase.auth.signUp({
+              email: dummyEmail,
+              password: password,
+              options: {
+                data: {
+                  full_name: fullName,
+                },
+              },
+            });
+
+          if (signUpError) {
+            if (signUpError.message.includes("already registered")) {
+              setError("Parol noto'g'ri"); // Username exists but wrong password triggered Invalid login credentials earlier
+            } else {
+              setError(signUpError.message);
+            }
+            setLoading(false);
+            return;
+          }
+        } else {
+          setError(authError.message);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Step 2: Save as lead
       const {
         data: { session },
       } = await supabase.auth.getSession();
+
       const { error: insertError } = await supabase.from("leads").insert({
         full_name: result.data.fullName,
         age: result.data.age,
         user_id: session?.user.id,
       });
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.log("Lead insert error:", insertError.message);
+      }
     } catch (err) {
-      // Continue even if insert fails (might be duplicate)
-      const errorMessage = err instanceof Error ? err.message : String(err);
-      console.log("Lead insert note:", errorMessage);
+      setError("Xatolik yuz berdi. Qayta urinib ko'ring.");
+      setLoading(false);
+      return;
     }
 
     // Redirect to Telegram
     const formattedPrice = price === "95000" ? "95,000 so'm" : "195,000 so'm";
     const message = encodeURIComponent(
-      `Salom! Men kitob sotib olmoqchiman.\nIsm: ${result.data.fullName}\nYosh: ${result.data.age}\nTanlangan tarif: ${formattedPrice}`,
+      `Salom! Men kitob sotib olmoqchiman.\nIsm: ${result.data.fullName}\nFoydalanuvchi nomi: ${username}\nYosh: ${result.data.age}\nTanlangan tarif: ${formattedPrice}`,
     );
     window.open(`https://t.me/shohruh_mentor?text=${message}`, "_blank");
 
@@ -143,6 +181,37 @@ const Purchase = () => {
                   onChange={(e) => setFullName(e.target.value)}
                   className="pl-10"
                   maxLength={100}
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="username">Foydalanuvchi nomi</Label>
+              <div className="relative mt-1">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="username"
+                  type="text"
+                  placeholder="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="pl-10 lowercase"
+                  maxLength={50}
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="password">Parol</Label>
+              <div className="relative mt-1">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10"
                 />
               </div>
             </div>
@@ -214,9 +283,13 @@ const Purchase = () => {
               </p>
             </div>
 
-            <Button variant="premium" size="lg" className="w-full gap-2">
-              <Send className="w-4 h-4" />
-              To'lov qildim, Telegram orqali bog'lanish
+            <Button
+              type="submit"
+              className="w-full gap-2 bg-[#5B172D] hover:bg-[#4A1224] text-white rounded-[16px] h-14 text-lg font-medium transition-colors shadow-none border-none"
+              disabled={loading}
+            >
+              <Send className="w-5 h-5 mr-1" />
+              {loading ? "Yuklanmoqda..." : "Telegram"}
             </Button>
           </form>
 

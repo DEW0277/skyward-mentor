@@ -80,7 +80,7 @@ const Navbar = () => {
           >
             Sotib olish
           </Button>
-          {user ? (
+          {user && (
             <button
               onClick={() => navigate("/dashboard")}
               className="transition-colors"
@@ -89,25 +89,6 @@ const Navbar = () => {
                 className={`w-7 h-7 ${scrolled ? "text-foreground" : "text-primary-foreground"}`}
               />
             </button>
-          ) : (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate("/auth")}
-              >
-                Kirish
-              </Button>
-              <Button
-                variant="hero"
-                size="sm"
-                onClick={() => {
-                  navigate("/auth");
-                }}
-              >
-                Ro'yxatdan o'tish
-              </Button>
-            </>
           )}
         </div>
 
@@ -162,7 +143,7 @@ const Navbar = () => {
             >
               Sotib olish
             </Button>
-            {user ? (
+            {user && (
               <Button
                 variant="outline"
                 size="sm"
@@ -171,15 +152,6 @@ const Navbar = () => {
               >
                 <UserCircle className="w-4 h-4 mr-2" />
                 Dashboard
-              </Button>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-                onClick={() => navigate("/auth")}
-              >
-                Kirish
               </Button>
             )}
           </div>

@@ -5,27 +5,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plane, Mail, Lock, User, AlertCircle } from "lucide-react";
+import { Plane, Lock, User, AlertCircle } from "lucide-react";
 import { z } from "zod";
 
-const loginSchema = z.object({
-  email: z.string().email("Email noto'g'ri formatda"),
+const authSchema = z.object({
+  username: z
+    .string()
+    .min(3, "Foydalanuvchi nomi kamida 3 ta belgi bo'lishi kerak")
+    .max(50),
   password: z.string().min(6, "Parol kamida 6 ta belgi bo'lishi kerak"),
-});
-
-const signupSchema = loginSchema.extend({
-  fullName: z.string().min(2, "Ism kamida 2 ta belgi bo'lishi kerak").max(100),
 });
 
 const Auth = () => {
   const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,74 +30,52 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      if (isLogin) {
-        const result = loginSchema.safeParse({ email, password });
-        if (!result.success) {
-          setError(result.error.errors[0].message);
-          setLoading(false);
-          return;
-        }
+      const result = authSchema.safeParse({ username, password });
+      if (!result.success) {
+        setError(result.error.errors[0].message);
+        setLoading(false);
+        return;
+      }
 
-        const { error } = await supabase.auth.signInWithPassword({
-          email: email,
-          password: password,
-        });
+      const dummyEmail = `${username}@skyward.local`;
 
-        if (error) {
-          if (error.message.includes("Invalid login credentials")) {
-            setError("Email yoki parol noto'g'ri");
-          } else if (error.message.includes("Email not confirmed")) {
-            setError(
-              "Email manzilingiz tasdiqlanmagan. Iltimos, emailingizni tekshiring.",
-            );
-          } else {
-            setError(error.message);
+      // Try login first
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: dummyEmail,
+        password: password,
+      });
+
+      if (authError) {
+        if (authError.message.includes("Invalid login credentials")) {
+          // Fallback to signup
+          const { data: signUpData, error: signUpError } =
+            await supabase.auth.signUp({
+              email: dummyEmail,
+              password: password,
+              options: {
+                data: {
+                  full_name: username,
+                },
+              },
+            });
+
+          if (signUpError) {
+            if (signUpError.message.includes("already registered")) {
+              setError("Parol noto'g'ri");
+            } else {
+              setError(signUpError.message);
+            }
+            setLoading(false);
+            return;
           }
-          setLoading(false);
-          return;
-        }
-
-        // Check if user has admin role - this will be handled by the protected route/dashboard logic
-        navigate("/dashboard");
-      } else {
-        const result = signupSchema.safeParse({ email, password, fullName });
-        if (!result.success) {
-          setError(result.error.errors[0].message);
-          setLoading(false);
-          return;
-        }
-
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`,
-            data: {
-              full_name: fullName,
-            },
-          },
-        });
-
-        if (error) {
-          if (error.message.includes("already registered")) {
-            setError("Bu email allaqachon ro'yxatdan o'tgan");
-          } else {
-            setError(error.message);
-          }
-          setLoading(false);
-          return;
-        }
-
-        // Immediate redirect to dashboard - assuming email confirmation is disabled in Supabase
-        if (data.session) {
-          navigate("/dashboard");
         } else {
-          // Fallback just in case confirmation is still on, but we want to try to let them in or show message
-          // But per requirement "Disable Email Confirmation", we expect session to be present.
-          // If not, we still redirect to dashboard where they might hit a protection wall or we can just redirect.
-          navigate("/dashboard");
+          setError(authError.message);
+          setLoading(false);
+          return;
         }
       }
+
+      navigate("/dashboard");
     } catch (err) {
       setError("Xatolik yuz berdi. Qayta urinib ko'ring.");
     } finally {
@@ -125,12 +100,10 @@ const Auth = () => {
               </span>
             </div>
             <h1 className="font-display text-2xl font-bold text-foreground">
-              {isLogin ? "Admin panelga kirish" : "Ro'yxatdan o'tish"}
+              Tizimga kirish
             </h1>
             <p className="text-muted-foreground text-sm mt-2">
-              {isLogin
-                ? "Foydalanuvchilarni boshqarish uchun kiring"
-                : "Yangi admin hisob yarating"}
+              Foydalanuvchilarni boshqarish uchun kiring
             </p>
           </div>
 
@@ -144,36 +117,18 @@ const Auth = () => {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <div>
-                <Label htmlFor="fullName">To'liq ism</Label>
-                <div className="relative mt-1">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="fullName"
-                    type="text"
-                    placeholder="Ismingiz"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="pl-10"
-                    maxLength={100}
-                  />
-                </div>
-              </div>
-            )}
-
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="username">Foydalanuvchi nomi</Label>
               <div className="relative mt-1">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="email@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
-                  maxLength={255}
+                  id="username"
+                  type="text"
+                  placeholder="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="pl-10 lowercase"
+                  maxLength={50}
                 />
               </div>
             </div>
@@ -199,29 +154,9 @@ const Auth = () => {
               className="w-full"
               disabled={loading}
             >
-              {loading
-                ? "Yuklanmoqda..."
-                : isLogin
-                  ? "Kirish"
-                  : "Ro'yxatdan o'tish"}
+              {loading ? "Yuklanmoqda..." : "Kirish"}
             </Button>
           </form>
-
-          {/* Toggle */}
-          <div className="mt-6 text-center">
-            <button
-              type="button"
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setError(null);
-              }}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {isLogin
-                ? "Hisob yo'qmi? Ro'yxatdan o'ting"
-                : "Hisobingiz bormi? Kiring"}
-            </button>
-          </div>
 
           {/* Back to home */}
           <div className="mt-4 text-center">
