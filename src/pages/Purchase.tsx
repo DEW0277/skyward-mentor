@@ -116,9 +116,9 @@ const Purchase = () => {
     }
 
     // Redirect to Telegram
-    const formattedPrice = price === "95000" ? "95,000 so'm" : "195,000 so'm";
+
     const message = encodeURIComponent(
-      `Salom! Men kitob sotib olmoqchiman.\nIsm: ${result.data.fullName}\nFoydalanuvchi nomi: ${username}\nYosh: ${result.data.age}\nTanlangan tarif: ${formattedPrice}`,
+      `Salom! Men kitob sotib olmoqchiman.\nIsm: ${result.data.fullName}\nFoydalanuvchi nomi: ${username}\nYosh: ${result.data.age}`,
     );
     window.open(`https://t.me/shohruh_mentor?text=${message}`, "_blank");
 
