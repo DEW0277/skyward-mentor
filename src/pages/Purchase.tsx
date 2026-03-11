@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plane, User, Calendar, ArrowLeft, Send, Lock } from "lucide-react";
+import { Plane, User, Calendar, ArrowLeft, Send, Lock, Upload } from "lucide-react";
 import { z } from "zod";
 import qrCodeImg from "@/assets/payment-qr.png";
 import { useToast } from "@/hooks/use-toast";
@@ -37,6 +37,7 @@ const Purchase = () => {
   const [price, setPrice] = useState("95000");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [receipt, setReceipt] = useState<File | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +53,12 @@ const Purchase = () => {
 
     if (!result.success) {
       setError(result.error.errors[0].message);
+      setLoading(false);
+      return;
+    }
+
+    if (!receipt) {
+      setError("Iltimos, to'lov chekini yuklang");
       setLoading(false);
       return;
     }
@@ -115,17 +122,46 @@ const Purchase = () => {
       return;
     }
 
-    // Redirect to Telegram
+    // Yuklangan chek bilan Telegram bot orqali guruhga yuborish
+    const botToken = import.meta.env.VITE_TELEGRAM_BOT_TOKEN;
+    const chatId = import.meta.env.VITE_TELEGRAM_CHAT_ID;
 
-    const message = encodeURIComponent(
-      `Salom! Men kitob sotib olmoqchiman.\nIsm: ${result.data.fullName}\nFoydalanuvchi nomi: ${username}\nYosh: ${result.data.age}`,
-    );
-    window.open(`https://t.me/shohruh_mentor?text=${message}`, "_blank");
+    if (!botToken || !chatId) {
+      console.warn("Telegram bot token yoki chat id topilmadi.");
+      // Iltimos .env faylida VITE_TELEGRAM_BOT_TOKEN va VITE_TELEGRAM_CHAT_ID ni sozlang
+    }
+
+    try {
+      const caption = `<b>Yangi xarid so'rovi:</b>\n👤 Ism: ${result.data.fullName}\n🔗 Username: ${username}\n📅 Yosh: ${result.data.age}`;
+
+      const formData = new FormData();
+      if (chatId) formData.append("chat_id", chatId);
+      formData.append("caption", caption);
+      formData.append("parse_mode", "HTML");
+      formData.append("photo", receipt);
+
+      const telegramResponse = await fetch(
+        `https://api.telegram.org/bot${botToken}/sendPhoto`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!telegramResponse.ok) {
+         throw new Error("Telegramga yuborishda xatolik yuz berdi");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Telegramga yuborishda xatolik o'z berdi. Iltimos keyinroq urinib ko'ring yoki bot sozlamalarini tekshiring.");
+      setLoading(false);
+      return;
+    }
 
     toast({
       title: "Muvaffaqiyatli!",
       description:
-        "So'rovingiz qabul qilindi. Biz siz bilan tez orada bog'lanamiz.",
+        "So'rovingiz qabul qilindi va chek yuborildi. Biz siz bilan tez orada bog'lanamiz.",
     });
 
     navigate("/");
@@ -278,9 +314,34 @@ const Purchase = () => {
                 />
               </div>
               <p className="text-xs text-muted-foreground/80">
-                To'lov qilganingizdan so'ng chekni skrinshot qilib Telegram
-                orqali yuboring
+                To'lov qilganingizdan so'ng chekni rasm tarzida yuklang
               </p>
+              
+              <div className="relative mt-4">
+                <input
+                  type="file"
+                  id="receipt"
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setReceipt(e.target.files[0]);
+                      setError(null);
+                    }
+                  }}
+                  className="hidden"
+                />
+                <Label
+                  htmlFor="receipt"
+                  className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-gold/50 transition-colors bg-background px-4"
+                >
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center">
+                    <Upload className="w-6 h-6 mb-2 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground break-all line-clamp-2">
+                      {receipt ? receipt.name : "Chekni yuklash uchun bosing"}
+                    </p>
+                  </div>
+                </Label>
+              </div>
             </div>
 
             <Button
@@ -289,7 +350,7 @@ const Purchase = () => {
               disabled={loading}
             >
               <Send className="w-5 h-5 mr-1" />
-              {loading ? "Yuklanmoqda..." : "Telegram"}
+              {loading ? "Yuklanmoqda..." : "Yuborish"}
             </Button>
           </form>
 

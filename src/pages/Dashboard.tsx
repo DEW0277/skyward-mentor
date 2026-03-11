@@ -33,6 +33,7 @@ interface LeadData {
   status: "pending" | "approved" | "blocked";
   access_until: string | null;
   has_cv_submitted: boolean;
+  tariff?: "standart" | "pro" | null;
 }
 
 const Dashboard = () => {
@@ -259,6 +260,50 @@ const Dashboard = () => {
             >
               <DashboardBookList />
             </motion.div>
+
+            {/* Pro bonuses */}
+            {lead.tariff === 'pro' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.18 }}
+              >
+                <Card className="border-gold/30 bg-gold/5 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gold/10 rounded-full -mr-16 -mt-16 blur-xl" />
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-base text-gold">
+                      <Shield className="w-5 h-5" />
+                      Pro Tarif Bonuslari
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      Sizda maxsus imtiyozlar mavjud
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="text-sm space-y-2">
+                      <div className="flex items-start gap-2">
+                        <span className="text-gold mt-0.5">•</span>
+                        <span>Shaxsiy CV tekshiruvi</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="text-gold mt-0.5">•</span>
+                        <span>Online Savol-Javob darslari</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="text-gold mt-0.5">•</span>
+                        <span>Yopiq Telegram kanalga kirish</span>
+                      </div>
+                    </div>
+                    <Button 
+                      className="w-full bg-gold hover:bg-gold/90 text-primary-foreground font-medium" 
+                      onClick={() => window.open(import.meta.env.VITE_PRO_TELEGRAM_LINK || 'https://t.me/+your_private_link', '_blank')}
+                    >
+                      Kanalga qo'shilish
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
 
             {/* User Info */}
             <motion.div

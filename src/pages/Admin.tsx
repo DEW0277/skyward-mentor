@@ -13,6 +13,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
   Plane,
   LogOut,
   Users,
@@ -84,6 +94,7 @@ interface Lead {
   has_cv_submitted: boolean;
   cv_file_path: string | null;
   created_at: string;
+  tariff?: 'standart' | 'pro' | null;
 }
 
 const Admin = () => {
@@ -96,6 +107,10 @@ const Admin = () => {
     "all" | "pending" | "approved" | "blocked"
   >("all");
   const [updating, setUpdating] = useState<string | null>(null);
+
+  // States for tariff selection modal
+  const [approvingLeadId, setApprovingLeadId] = useState<string | null>(null);
+  const [selectedTariff, setSelectedTariff] = useState<'standart' | 'pro'>('standart');
 
   useEffect(() => {
     const {
@@ -138,22 +153,60 @@ const Admin = () => {
     }
   };
 
+  const handleApproveClick = (leadId: string) => {
+    setApprovingLeadId(leadId);
+    setSelectedTariff('standart');
+  };
+
+  const confirmApprove = async () => {
+    if (!approvingLeadId) return;
+    
+    setUpdating(approvingLeadId);
+
+    const accessUntil = new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString(); // +6 months
+    
+    const { error } = await supabase
+      .from("leads")
+      .update({
+        status: "approved",
+        access_until: accessUntil,
+        tariff: selectedTariff,
+      })
+      .eq("id", approvingLeadId);
+
+    if (!error) {
+      setLeads(
+        leads.map((lead) =>
+          lead.id === approvingLeadId
+            ? { ...lead, status: "approved", access_until: accessUntil, tariff: selectedTariff }
+            : lead,
+        ),
+      );
+    } else {
+      console.error("Error approving lead:", error);
+    }
+
+    setUpdating(null);
+    setApprovingLeadId(null);
+  };
+
   const updateLeadStatus = async (
     leadId: string,
     newStatus: "approved" | "blocked",
   ) => {
-    setUpdating(leadId);
+    // For approve, use the modal first, unless we're just blocking
+    if (newStatus === "approved") {
+      handleApproveClick(leadId);
+      return;
+    }
 
-    const accessUntil =
-      newStatus === "approved"
-        ? new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString() // +6 months
-        : null;
+    setUpdating(leadId);
 
     const { error } = await supabase
       .from("leads")
       .update({
         status: newStatus,
-        access_until: accessUntil,
+        access_until: null,
       })
       .eq("id", leadId);
 
@@ -161,7 +214,7 @@ const Admin = () => {
       setLeads(
         leads.map((lead) =>
           lead.id === leadId
-            ? { ...lead, status: newStatus, access_until: accessUntil }
+            ? { ...lead, status: newStatus, access_until: null }
             : lead,
         ),
       );
@@ -388,7 +441,7 @@ const Admin = () => {
                         {lead.status === "pending"
                           ? "Kutilmoqda"
                           : lead.status === "approved"
-                            ? "Tasdiqlangan"
+                            ? lead.tariff ? `Tasdiqlangan (${lead.tariff === 'pro' ? 'Pro' : 'Standart'})` : "Tasdiqlangan"
                             : "Bloklangan"}
                       </Badge>
                     </TableCell>
@@ -469,6 +522,40 @@ const Admin = () => {
             </TableBody>
           </Table>
         </div>
+
+        {/* Tariff Selection Dialog */}
+        <Dialog open={!!approvingLeadId} onOpenChange={(open) => !open && setApprovingLeadId(null)}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Foydalanuvchini tasdiqlash</DialogTitle>
+              <DialogDescription>
+                Foydalanuvchini tizimga kiritish uchun kerakli tarifni tanlang. 
+                Pro tarifidagi mijozlar uchun alohida bonuslar ko'rinadi.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <RadioGroup value={selectedTariff} onValueChange={(val: 'standart' | 'pro') => setSelectedTariff(val)}>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="standart" id="standart" />
+                  <Label htmlFor="standart">Standart tarif</Label>
+                </div>
+                <div className="flex items-center space-x-2 mt-4">
+                  <RadioGroupItem value="pro" id="pro" />
+                  <Label htmlFor="pro">Pro tarif</Label>
+                </div>
+              </RadioGroup>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setApprovingLeadId(null)} disabled={!!updating}>
+                Bekor qilish
+              </Button>
+              <Button type="button" onClick={confirmApprove} disabled={!!updating}>
+                {updating ? 'Tasdiqlanmoqda...' : 'Tasdiqlash'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
       </main>
     </div>
   );
