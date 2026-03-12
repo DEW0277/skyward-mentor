@@ -120,7 +120,7 @@ const Admin = () => {
       setUser(session?.user ?? null);
 
       if (!session) {
-        navigate("/auth");
+        navigate("/admin");
       }
     });
 
@@ -128,7 +128,7 @@ const Admin = () => {
       setSession(session);
       setUser(session?.user ?? null);
       if (!session) {
-        navigate("/auth");
+        navigate("/admin");
       }
       setLoading(false);
     });
@@ -248,7 +248,7 @@ const Admin = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate("/auth");
+    navigate("/admin");
   };
 
   const handleDownloadCV = async (cvFilePath: string, fullName: string) => {

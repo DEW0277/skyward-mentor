@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import PlaneAnimation from "./components/PlaneAnimation";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
+import AdminLogin from "./pages/AdminLogin";
 import Dashboard from "./pages/Dashboard";
 import Purchase from "./pages/Purchase";
 import NotFound from "./pages/NotFound";
@@ -103,7 +104,8 @@ const AppContent = () => {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin" element={<AdminLogin />} />
+          <Route path="/admin-dashboard" element={<Admin />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/purchase" element={<Purchase />} />
           <Route path="*" element={<NotFound />} />

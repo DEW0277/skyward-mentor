@@ -19,6 +19,9 @@ import {
   AlertTriangle,
   Shield,
   Home,
+  BadgeCheck,
+  Crown,
+  Star,
 } from "lucide-react";
 import FullBookReader from "@/components/FullBookReader";
 import CVSubmission from "@/components/CVSubmission";
@@ -191,14 +194,39 @@ const Dashboard = () => {
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="text-2xl">✈️</div>
+            <div className="relative">
+              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-xl border border-border">
+                <User className="w-5 h-5 text-muted-foreground" />
+              </div>
+              {lead.status === "approved" && (
+                <div
+                  className="absolute -bottom-1 -right-1 bg-background rounded-full p-[2px] shadow-sm"
+                  title={lead.tariff === "pro" ? "Pro Tarif" : "Standart Tarif"}
+                >
+                  {lead.tariff === "pro" ? (
+                    <Crown className="w-4 h-4 text-amber-500 fill-amber-500" />
+                  ) : (
+                    <Star className="w-4 h-4 text-slate-400 fill-slate-400" />
+                  )}
+                </div>
+              )}
+            </div>
             <div>
-              <h1 className="font-display font-bold text-foreground">
+              <h1 className="font-display font-bold text-foreground leading-tight">
                 Skyward Mentor
               </h1>
-              <p className="text-muted-foreground text-xs">
-                Xush kelibsiz, {lead.full_name}
-              </p>
+              <div className="flex items-center gap-1 mt-0.5">
+                <p className="text-muted-foreground text-sm font-medium">
+                  {lead.full_name}
+                </p>
+                {lead.status === "approved" && (
+                  <span title="Tasdiqlangan foydalanuvchi" className="flex">
+                    <BadgeCheck
+                      className="w-4 h-4 text-blue-500 fill-blue-500 text-white"
+                    />
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -262,7 +290,7 @@ const Dashboard = () => {
             </motion.div>
 
             {/* Pro bonuses */}
-            {lead.tariff === 'pro' && (
+            {lead.tariff === "pro" && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -294,9 +322,15 @@ const Dashboard = () => {
                         <span>Yopiq Telegram kanalga kirish</span>
                       </div>
                     </div>
-                    <Button 
-                      className="w-full bg-gold hover:bg-gold/90 text-primary-foreground font-medium" 
-                      onClick={() => window.open(import.meta.env.VITE_PRO_TELEGRAM_LINK || 'https://t.me/+your_private_link', '_blank')}
+                    <Button
+                      className="w-full bg-gold hover:bg-gold/90 text-primary-foreground font-medium"
+                      onClick={() =>
+                        window.open(
+                          import.meta.env.VITE_PRO_TELEGRAM_LINK ||
+                            "https://t.me/+your_private_link",
+                          "_blank",
+                        )
+                      }
                     >
                       Kanalga qo'shilish
                     </Button>
@@ -319,11 +353,16 @@ const Dashboard = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Ism:</span>
-                    <span className="text-foreground font-medium">
-                      {lead.full_name}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-foreground font-medium">
+                        {lead.full_name}
+                      </span>
+                      {lead.status === "approved" && (
+                        <BadgeCheck className="w-4 h-4 text-blue-500 fill-blue-500 text-white" />
+                      )}
+                    </div>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Yosh:</span>
@@ -337,6 +376,22 @@ const Dashboard = () => {
                       ✓ Tasdiqlangan
                     </span>
                   </div>
+                  {lead.tariff && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Ta'rif:</span>
+                      <span className="text-foreground font-medium flex items-center gap-1 capitalize">
+                        {lead.tariff === "pro" ? (
+                          <>
+                            <Crown className="w-3 h-3 text-amber-500" /> Pro
+                          </>
+                        ) : (
+                          <>
+                            <Star className="w-3 h-3 text-slate-400" /> Standart
+                          </>
+                        )}
+                      </span>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
