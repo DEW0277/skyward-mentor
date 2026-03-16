@@ -322,18 +322,27 @@ const Dashboard = () => {
                         <span>Yopiq Telegram kanalga kirish</span>
                       </div>
                     </div>
-                    <Button
-                      className="w-full bg-gold hover:bg-gold/90 text-primary-foreground font-medium"
-                      onClick={() =>
-                        window.open(
-                          import.meta.env.VITE_PRO_TELEGRAM_LINK ||
-                            "https://t.me/+your_private_link",
-                          "_blank",
-                        )
-                      }
-                    >
-                      Kanalga qo'shilish
-                    </Button>
+                    <div className="space-y-3">
+                      <Button
+                        className="w-full bg-gold hover:bg-gold/90 text-primary-foreground font-medium"
+                        onClick={() =>
+                          window.open(
+                            import.meta.env.VITE_PRO_TELEGRAM_LINK ||
+                              "https://t.me/+your_private_link",
+                            "_blank",
+                          )
+                        }
+                      >
+                        Kanalga qo'shilish
+                      </Button>
+                      <Button
+                        className="w-full bg-primary/20 hover:bg-primary/30 text-primary-foreground border border-gold/30 font-medium"
+                        variant="outline"
+                        onClick={() => window.open("https://t.me/shohruhmentorcv_bot", "_blank")}
+                      >
+                        CV yuborish
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               </motion.div>

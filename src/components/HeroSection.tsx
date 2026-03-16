@@ -54,7 +54,7 @@ const HeroSection = () => {
             yozilgan.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
             <Button
               variant="hero"
               size="xl"
@@ -72,6 +72,13 @@ const HeroSection = () => {
               }
             >
               Bepul sahifalarni ko'rish
+            </Button>
+            <Button
+              variant="heroOutline"
+              size="xl"
+              onClick={() => navigate("/auth")}
+            >
+              Tizimga kirish
             </Button>
           </div>
         </motion.div>
